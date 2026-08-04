@@ -1,5 +1,5 @@
 :root {
-  --header-height: clamp(120px, 10vh, 180px);
+  --header-height: 5vh;
   --cursor-x: 50vw;
   --cursor-y: 20vh;
   --bg: #070c14;
@@ -86,7 +86,8 @@ body {
   z-index: 40;
   min-height: var(--header-height);
   max-height: var(--header-height);
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable both-edges;
   padding: 1rem clamp(1rem, 4vw, 3rem) 0.9rem;
   background: rgba(7, 12, 20, 0.82);
   backdrop-filter: blur(14px);
@@ -578,8 +579,10 @@ input[type="search"]::placeholder {
   margin: 0;
   padding-left: 0;
   list-style: none;
-  max-height: 520px;
-  overflow: auto;
+  height: min(52vh, 520px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 .sequence-list li {
@@ -874,8 +877,11 @@ input[type="search"]::placeholder {
   background: #05090f;
   color: #7ce9d8;
   min-height: 190px;
-  max-height: 280px;
-  overflow: auto;
+  height: min(32vh, 280px);
+  max-height: min(32vh, 280px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   padding: 0.7rem 0.8rem;
   font-family: "IBM Plex Mono", "Consolas", monospace;
   font-size: 0.83rem;
