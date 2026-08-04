@@ -2,6 +2,8 @@
 
 Interactive HTML learning tool for explaining SecurityStorage internals in an ADAS automotive embedded context.
 
+**Live demo:** https://vinodneelakantam.github.io/CyberSecuity_Learning_UI/
+
 Now includes dropdown-driven scenarios for:
 - SecurityStorage
 - SecureJTAG
