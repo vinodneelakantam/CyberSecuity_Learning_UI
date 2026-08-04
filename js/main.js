@@ -88,6 +88,11 @@ document.querySelectorAll(".tab").forEach((btn) => {
   btn.addEventListener("click", () => setTab(btn.dataset.tab));
 });
 
+window.addEventListener("pointermove", (event) => {
+  document.documentElement.style.setProperty("--cursor-x", `${event.clientX}px`);
+  document.documentElement.style.setProperty("--cursor-y", `${event.clientY}px`);
+});
+
 window.addEventListener("resize", () => {
   renderDiagram();
   renderStep();
