@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecurityStorage Internal Explorer | ADAS Embedded Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-layer" aria-hidden="true"></div>
+
+    <header class="site-header" id="top">
+      <div class="title-wrap">
+        <p class="eyebrow">ADAS EMBEDDED SECURITY TRAINING SIMULATOR</p>
+        <h1 id="pageTitle">ADAS Embedded Security Learning Workbench</h1>
+        <p class="intro-text">
+          Interactive simulator for TI Jacinto/TDA4 security architecture, built for engineers to review
+          internal behavior of secure services across Classic/Adaptive split deployments.
+        </p>
+        <p id="currentTopicTitle" class="chip">Current Topic: SecurityStorage</p>
+      </div>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#overview">Overview</a>
+        <a href="#context">System Context</a>
+        <a href="#flow">Internal Flow</a>
+        <a href="#controls">Security Controls</a>
+        <a href="#resilience">Failure & Recovery</a>
+        <a href="#learning">Learning Zone</a>
+        <a href="#summary">Summary</a>
+      </nav>
+
+      <div class="selector-strip" aria-label="Security topic and platform selection">
+        <label>
+          Security Topic
+          <select id="domainSelect" aria-label="Security domain selection">
+            <option value="securityStorage" selected>SecurityStorage</option>
+            <option value="secureJtag">SecureJTAG</option>
+            <option value="secureDiagnostics">SecureDiagnostics</option>
+            <option value="secureBoot">SecureBoot</option>
+            <option value="secureLogging">SecureLogging</option>
+          </select>
+        </label>
+
+        <label>
+          Platform
+          <select id="platformSelect" aria-label="Platform selection">
+            <option value="tda4vm" selected>TDA4VM (Jacinto7)</option>
+            <option value="jacinto7Generic">Jacinto7 Generic</option>
+          </select>
+        </label>
+
+        <label>
+          Learning Mode
+          <select id="learningMode" aria-label="Learning mode">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate" selected>Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+        </label>
+
+        <label>
+          View
+          <select id="viewMode" aria-label="View mode">
+            <option value="visual" selected>Visual Flow</option>
+            <option value="backend">Backend Log View</option>
+          </select>
+        </label>
+
+        <label class="search-wrap">
+          Search Concept
+          <input
+            id="conceptSearch"
+            type="search"
+            list="conceptOptions"
+            placeholder="Pick a step or glossary term..."
+            aria-label="Search concept"
+          />
+          <datalist id="conceptOptions"></datalist>
+        </label>
+        <button id="searchButton" class="btn btn-secondary" type="button">Jump</button>
+      </div>
+
+      <div class="playback-controls" aria-label="Playback controls">
+        <button id="prevBtn" class="btn" type="button">Previous</button>
+        <button id="playPauseBtn" class="btn btn-primary" type="button">Play</button>
+        <button id="nextBtn" class="btn" type="button">Next</button>
+        <button id="replayBtn" class="btn btn-secondary" type="button">Replay from Start</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress" aria-label="Playback progress">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="mono">Step 1 / 10</p>
+      </div>
+    </header>
+
+    <main>
+      <section id="overview" class="panel reveal">
+        <h2>Introduction</h2>
+        <p id="overviewIntro"></p>
+        <div class="chips" id="overviewChips"></div>
+        <div class="placeholder-note">
+          <strong>Reference project profile:</strong>
+          <span id="referenceProfileText">
+            TI Jacinto TDA4VM ADAS Domain Controller, AUTOSAR Adaptive workload on A72 Linux/QNX partition
+            with AUTOSAR Classic security services on lockstep R5F, secure flash partitions
+            <em>sstore_a</em>/<em>sstore_b</em> (2 x 256 KB) plus 32 KB journal, DMSC/HSM-assisted cryptography,
+            and diagnostics mapped to UDS DTC ranges 0xC4A1-0xC4AF for storage security events.
+          </span>
+        </div>
+        <p id="domainContextNote" class="intro-text"></p>
+      </section>
+
+      <section id="context" class="panel reveal">
+        <h2>System Context</h2>
+        <div class="grid-3" id="contextGrid"></div>
+        <p class="placeholder-note">
+          Visual simulator is below in Internal Flow. Architecture and sequence views are synchronized with
+          your selected security topic and platform.
+        </p>
+      </section>
+
+      <section id="flow" class="panel reveal">
+        <h2 id="flowTitle">Internal Flow Walkthrough</h2>
+        <p id="flowSubtitle">
+          Numbered sequence and backend behavior. Use playback controls to run a guided simulation.
+        </p>
+
+        <h3>Architecture View</h3>
+        <div class="architecture-view" role="img" aria-label="Architecture view synchronized with selected security topic">
+          <div class="arch-row arch-row-top">
+            <div id="archNode1" class="arch-node arch-boot">ROM/SBL Secure Boot</div>
+            <div id="archNode2" class="arch-node arch-adaptive">Adaptive App Cluster (A72)</div>
+            <div id="archNode3" class="arch-node arch-classic">Classic SecSvc (R5F Lockstep)</div>
+          </div>
+          <div class="arch-links">
+            <span id="archLink1">Trust Chain</span>
+            <span id="archLink2">Authenticated IPC (RPMsg/SOME-IP)</span>
+            <span id="archLink3">Policy + Diagnostics</span>
+          </div>
+          <div class="arch-row arch-row-bottom">
+            <div id="archNode4" class="arch-node arch-hsm">DMSC/HSM Crypto Services</div>
+            <div id="archNode5" class="arch-node arch-flash">OSPI Secure Flash (A/B + Journal)</div>
+          </div>
+          <div class="arch-footer">
+            <span id="archLink4">Key Wrap / Encrypt / MAC</span>
+            <span id="archLink5">Atomic Commit / Anti-Rollback / Recovery</span>
+          </div>
+        </div>
+
+        <h3>Lifecycle View</h3>
+        <div class="state-machine" id="lifecycleView" role="img" aria-label="Lifecycle state transitions for selected secure concept"></div>
+
+        <div class="tabs" role="tablist" aria-label="Flow perspectives">
+          <button class="tab active" role="tab" data-tab="all" aria-selected="true">Functional Flow</button>
+          <button class="tab" role="tab" data-tab="security" aria-selected="false">Security Flow</button>
+          <button class="tab" role="tab" data-tab="error" aria-selected="false">Error Handling Flow</button>
+        </div>
+
+        <div class="playback-layout">
+          <aside class="sequence-column">
+            <h3>Numbered Sequence</h3>
+            <ol id="sequenceList" class="sequence-list"></ol>
+          </aside>
+
+          <div class="diagram-column" id="diagramColumn">
+            <h3>Sequence Diagram</h3>
+            <div class="diagram" id="sequenceDiagram">
+              <svg id="sequenceSvg" class="sequence-svg" aria-label="Step numbered sequence diagram"></svg>
+            </div>
+            <p class="diagram-hint mono">
+              Lifelines are fixed by architecture. Arrow color and step badge highlight the active simulator step.
+            </p>
+            <div id="diagramEvents" class="diagram-events"></div>
+          </div>
+
+          <aside class="log-column" id="logColumn">
+            <h3>Backend Behavior</h3>
+            <article class="active-step-card">
+              <p class="step-kicker mono" id="activeStepId">STEP 1</p>
+              <h4 id="activeStepTitle">Initialization</h4>
+              <p id="activeStepSummary"></p>
+
+              <details open>
+                <summary>Deep Dive</summary>
+                <p id="activeStepDeepDive"></p>
+                <pre id="activeStepPseudo" class="pseudo"></pre>
+              </details>
+            </article>
+
+            <div class="log-panel" id="backendLogPanel"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="controls" class="panel reveal">
+        <h2>Security Controls</h2>
+        <div class="grid-2" id="controlsGrid"></div>
+
+        <h3 id="comparisonTitle"></h3>
+        <div class="comparison">
+          <div>
+            <h4>Secure Behavior</h4>
+            <ul id="secureBehaviorsList"></ul>
+          </div>
+          <div>
+            <h4>Insecure Behavior</h4>
+            <ul id="insecureBehaviorsList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="resilience" class="panel reveal">
+        <h2>Failure, Threats, and Recovery</h2>
+        <div class="accordion" id="resilienceAccordion"></div>
+
+        <h3>Behind The Scenes</h3>
+        <p id="behindScenesText"></p>
+      </section>
+
+      <section id="learning" class="panel reveal">
+        <h2>Learning Zone</h2>
+        <div class="grid-2">
+          <article class="card">
+            <h3>Why It Matters in ADAS</h3>
+            <ul id="whyItMattersList"></ul>
+          </article>
+          <article class="card">
+            <h3>Glossary</h3>
+            <div id="glossary" class="glossary"></div>
+          </article>
+        </div>
+
+        <h3>Knowledge Check</h3>
+        <div id="quizContainer" class="quiz-wrap"></div>
+        <button id="gradeQuizBtn" class="btn btn-primary" type="button">Grade Quiz</button>
+        <p id="quizResult" class="quiz-result"></p>
+      </section>
+
+      <section id="summary" class="panel reveal">
+        <h2>Summary and Key Takeaways</h2>
+        <ul id="summaryBulletsList"></ul>
+        <p class="placeholder-note" id="summaryAssumptionsText"></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p id="footerText">SecurityStorage Internal Explorer · ADAS Embedded Security Training Artifact</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
