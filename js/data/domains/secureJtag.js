@@ -4,28 +4,28 @@ export const profile = {
   title: "SecureJTAG Internal Explorer",
   flowTitle: "SecureJTAG Unlock and Debug Governance Flow",
   context:
-    "SecureJTAG mirrors Texas Instruments K3 debug security: electrically erasable programmable read-only memory-encoded device lifecycle (general purpose, high-security field secure, and high-security secure enclave) locks CoreSight debug by default, and unlock requires a signed X.509 debug certificate verified by the Device Management and Security Controller through the Texas Instruments Security Accelerator public key accelerator engine.",
+    "SecureJTAG mirrors Texas Instruments (TI) K3 debug security: electrically erasable programmable read-only memory (eFuse)-encoded device lifecycle (general purpose, high-security field secure, and high-security secure enclave) locks CoreSight debug by default, and unlock requires a signed X.509 debug certificate verified by the Device Management and Security Controller (DMSC) through the Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) engine.",
   participants: [
     "Debug Host (XDS110 Probe)",
-    "Device Management and Security Controller debug security handler",
+    "Device Management and Security Controller (DMSC) debug security handler",
     "eFuse lifecycle state",
-    "Texas Instruments Security Accelerator public key accelerator (signature verify)",
-    "CoreSight Debug Access Port controller",
+    "Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) (signature verify)",
+    "CoreSight Debug Access Port (DAP) controller",
     "Secure Audit Log"
   ],
   architecture: {
     nodes: [
       "Debug Host / XDS110 JTAG Probe",
-      "DMSC Debug Security Handler (R5F)",
+      "DMSC Debug Security Handler (R5F / Arm Cortex-R5F)",
       "eFuse security lifecycle (general purpose / high-security field secure / high-security secure enclave)",
-      "Texas Instruments Security Accelerator public key accelerator signature verify",
-      "CoreSight DAP + Secure Audit Log"
+      "Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) signature verify",
+      "CoreSight Debug Access Port (DAP) + Secure Audit Log"
     ],
     links: [
       "Lifecycle-based default lock policy",
       "Signed X.509 debug unlock certificate submission",
       "DIE-ID-bound challenge/nonce exchange",
-      "Elliptic Curve Digital Signature Algorithm or Rivest–Shamir–Adleman signature check against the eFuse root key hash",
+      "Elliptic Curve Digital Signature Algorithm (ECDSA) or Rivest–Shamir–Adleman (RSA) signature check against the eFuse root key hash",
       "Timed DAP unlock + audit trail commit"
     ]
   },
@@ -34,15 +34,15 @@ export const profile = {
       1,
       "Default Lock State",
       "JTAG defaults to locked state after boot lifecycle evaluation.",
-      "Device Management and Security Controller debug security handler -> eFuse lifecycle state: readSecurityLifecycle()",
+      "Device Management and Security Controller (DMSC) debug security handler -> eFuse lifecycle state: readSecurityLifecycle()",
       ["all", "security"],
-      "The Device Management and Security Controller reads the eFuse-programmed lifecycle (general purpose, high-security field secure, or high-security secure enclave); on high-security devices the CoreSight Debug Access Port is denied by default until a cryptographically authenticated unlock flow completes.",
+      "The Device Management and Security Controller (DMSC) reads the eFuse-programmed lifecycle (general purpose, high-security field secure, or high-security secure enclave); on high-security devices the CoreSight Debug Access Port (DAP) is denied by default until a cryptographically authenticated unlock flow completes.",
       [
         "lcs = eFuse.readLifecycle()",
         "DAP.mode = LOCKED",
-        "Policy.loadDebugMatrix(lcs)"
+      "Debug host (XDS110 probe) -> Device Management and Security Controller (DMSC) debug security handler: submitUnlockCert()",
       ],
-      [
+      "The X.509 debug certificate carries the requested core scope, customer key reference, and session time-to-live policy.",
         "[EFUSE] lifecycle = HS-SE",
         "[DAP] lock state enabled",
         "[DBG] unauthorized debug blocked"
@@ -70,9 +70,9 @@ export const profile = {
       3,
       "Challenge Issue",
       "Hardware challenge nonce is issued for anti-replay proof.",
-      "Device Management and Security Controller debug security handler -> Texas Instruments Security Accelerator public key accelerator (signature verify): generateChallenge()",
+      "Device Management and Security Controller (DMSC) debug security handler -> Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) (signature verify): generateChallenge()",
       ["all", "security"],
-      "The security accelerator's true random number generator issues a device identifier-bound nonce so the response cannot be replayed against another unit or session.",
+      "The security accelerator's true random number generator (TRNG) issues a device identifier-bound nonce so the response cannot be replayed against another unit or session.",
       [
         "nonce = SA2UL.trng()",
         "challenge = Pack(nonce, dieId)",
@@ -88,9 +88,9 @@ export const profile = {
       4,
       "Signature Verification",
       "Tool response is validated against the eFuse root key hash.",
-      "Device Management and Security Controller debug security handler -> Texas Instruments Security Accelerator public key accelerator (signature verify): verifyUnlockResponse()",
+      "Device Management and Security Controller (DMSC) debug security handler -> Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) (signature verify): verifyUnlockResponse()",
       ["all", "security"],
-      "The security accelerator's public key accelerator checks the signature chain against the eFuse root key hash, expiry window, nonce match, and role claims.",
+      "The security accelerator's public key accelerator (SA2UL PKA) checks the signature chain against the eFuse root key hash, expiry window, nonce match, and role claims.",
       [
         "sigOk = SA2UL.pkaVerify(resp, eFuse.rootKeyHash)",
         "Nonce.match(resp)",
@@ -106,7 +106,7 @@ export const profile = {
       5,
       "Privilege Mapping",
       "Policy maps certificate claims to bounded debug capabilities.",
-      "Device Management and Security Controller debug security handler -> CoreSight Debug Access Port controller: mapDebugScope()",
+      "Device Management and Security Controller (DMSC) debug security handler -> CoreSight Debug Access Port (DAP) controller: mapDebugScope()",
       ["all", "security"],
       "Policy grants only allowed per-core operations such as read-only scan or restricted memory windows.",
       [
@@ -124,7 +124,7 @@ export const profile = {
       6,
       "Timed Unlock",
       "Controller opens the CoreSight DAP window for the approved duration.",
-      "Device Management and Security Controller debug security handler -> CoreSight Debug Access Port controller: enableTimedUnlock()",
+      "Device Management and Security Controller (DMSC) debug security handler -> CoreSight Debug Access Port (DAP) controller: enableTimedUnlock()",
       ["all", "functional"],
       "Unlock session is bounded by timer, reset trigger, and violation watchdogs.",
       [
@@ -142,7 +142,7 @@ export const profile = {
       7,
       "Monitoring and Auto-Revoke",
       "Policy violations or expiry force immediate relock.",
-      "Device Management and Security Controller debug security handler -> CoreSight Debug Access Port controller: revokeOnViolation()",
+      "Device Management and Security Controller (DMSC) debug security handler -> CoreSight Debug Access Port (DAP) controller: revokeOnViolation()",
       ["all", "error", "security"],
       "Detects privilege escalation, invalid command classes, and timer expiry.",
       [
@@ -160,7 +160,7 @@ export const profile = {
       8,
       "Audit Finalization",
       "Session closure evidence is committed to the secure audit log.",
-      "Device Management and Security Controller debug security handler -> secure audit log: persistSessionAudit()",
+      "Device Management and Security Controller (DMSC) debug security handler -> secure audit log: persistSessionAudit()",
       ["all", "error"],
       "Final audit includes DIE ID, certificate serial, requester identity, scope, duration, and violation markers.",
       [
@@ -179,7 +179,7 @@ export const profile = {
 
 export const narrative = {
   overviewIntro:
-    "SecureJTAG governs debug and trace access to the Texas Instruments TDA4VM system-on-chip. It mirrors Texas Instruments K3 debug security: eFuse-encoded device lifecycle (general purpose, high-security field secure, or high-security secure enclave) locks CoreSight debug by default, and unlock requires a signed X.509 debug certificate verified by the Device Management and Security Controller through the Texas Instruments Security Accelerator public key accelerator engine before any core scope is opened.",
+    "SecureJTAG governs debug and trace access to the Texas Instruments (TI) TDA4VM system-on-chip. It mirrors Texas Instruments K3 debug security: eFuse-encoded device lifecycle (general purpose, high-security field secure, or high-security secure enclave) locks CoreSight debug by default, and unlock requires a signed X.509 debug certificate verified by the Device Management and Security Controller (DMSC) through the Texas Instruments Security Accelerator public key accelerator (SA2UL PKA) engine before any core scope is opened.",
   chips: [
     "eFuse lifecycle enforcement",
     "Certificate-based debug unlock",
@@ -189,29 +189,29 @@ export const narrative = {
   contextCards: [
     {
       title: "Lifecycle Lock Chain",
-      body: "Device lifecycle (general purpose, high-security field secure, or high-security secure enclave) is fused at manufacturing and read by the Device Management and Security Controller at every boot. On high-security secure enclave devices, CoreSight Debug Access Port defaults to fully locked until an authenticated unlock flow completes."
+      body: "Device lifecycle (general purpose, high-security field secure, or high-security secure enclave) is fused at manufacturing and read by the Device Management and Security Controller (DMSC) at every boot. On high-security secure enclave devices, CoreSight Debug Access Port (DAP) defaults to fully locked until an authenticated unlock flow completes."
     },
     {
       title: "Runtime Debug Governance",
-      body: "Workshop and field debug tools submit signed certificates through the Device Management and Security Controller debug security handler, which negotiates scope, session time-to-live, and core access before releasing the Debug Access Port."
+      body: "Workshop and field debug tools submit signed certificates through the Device Management and Security Controller (DMSC) debug security handler, which negotiates scope, session time-to-live, and core access before releasing the Debug Access Port (DAP)."
     },
     {
       title: "Session Teardown Path",
-      body: "Unlock sessions are time-bounded; on time-to-live expiry or explicit revoke, the Device Management and Security Controller re-locks the Debug Access Port and commits an audit record so no debug session persists silently."
+      body: "Unlock sessions are time-bounded; on time-to-live expiry or explicit revoke, the Device Management and Security Controller (DMSC) re-locks the Debug Access Port (DAP) and commits an audit record so no debug session persists silently."
     }
   ],
   controlCards: [
     {
       title: "Certificate Authentication",
-      body: "X.509 debug unlock certificates carry requested core scope, customer key reference, and session time-to-live, all validated before any challenge is issued."
+      body: "X.509 debug unlock certificates carry requested core scope, customer key reference, and session time-to-live (TTL), all validated before any challenge is issued."
     },
     {
       title: "Challenge/Response Integrity",
-      body: "The security accelerator's true random number generator issues a device identifier-bound nonce so a captured response cannot be replayed against another unit or a later session."
+      body: "The security accelerator's true random number generator (TRNG) issues a device identifier-bound nonce so a captured response cannot be replayed against another unit or a later session."
     },
     {
       title: "Signature Verification",
-      body: "Elliptic Curve Digital Signature Algorithm or Rivest–Shamir–Adleman signatures are checked by the security accelerator's public key accelerator against the eFuse-programmed root key hash before any unlock ticket is honored."
+      body: "Elliptic Curve Digital Signature Algorithm (ECDSA) or Rivest–Shamir–Adleman (RSA) signatures are checked by the security accelerator's public key accelerator (SA2UL PKA) against the eFuse-programmed root key hash before any unlock ticket is honored."
     },
     {
       title: "Audit and Revocation",
@@ -269,8 +269,8 @@ export const narrative = {
     "SecureJTAG must default to locked and require cryptographically verified unlock.",
     "Challenge/response and signature checks defeat replay and certificate forgery.",
     "Session TTL and audit logging keep debug access accountable.",
-    "Lifecycle state (GP/HS-FS/HS-SE) is the anchor for all debug policy decisions."
+    "Lifecycle state (general purpose / high-security field secure / high-security secure enclave) is the anchor for all debug policy decisions."
   ],
   summaryAssumptions:
-    "Reference assumptions used in this simulator: high-security secure enclave lifecycle device, X.509 debug certificates issued by an authorized customer key, unlock session time-to-live of 30 minutes with explicit revoke supported, Device Management and Security Controller-mediated CoreSight Debug Access Port control, and audit events mapped to Texas Instruments-defined debug security diagnostic classes."
+    "Reference assumptions used in this simulator: high-security secure enclave lifecycle device, X.509 debug certificates issued by an authorized customer key, unlock session time-to-live (TTL) of 30 minutes with explicit revoke supported, Device Management and Security Controller (DMSC)-mediated CoreSight Debug Access Port (DAP) control, and audit events mapped to Texas Instruments-defined debug security diagnostic classes."
 };

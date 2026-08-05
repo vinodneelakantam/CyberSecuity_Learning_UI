@@ -4,20 +4,20 @@ export const profile = {
   title: "SecureBoot Internal Explorer",
   flowTitle: "SecureBoot Chain-of-Trust and Release Flow",
   context:
-    "SecureBoot follows the TI K3 (J721E/TDA4VM) chain of trust: Boot Read-Only Memory to X.509-authenticated R5 Secondary Program Loader, System Firmware / Texas Instruments System Firmware bring-up on the Device Management and Security Controller, Arm Trusted Firmware BL31 and Open Portable Trusted Execution Environment BL32 on the Arm Cortex-A72, and a signed handoff to U-Boot or Linux with Replay Protected Memory Block-backed anti-rollback at every stage.",
+    "SecureBoot follows the Texas Instruments (TI) K3 (J721E/TDA4VM) chain of trust: Boot Read-Only Memory (Boot ROM) to X.509-authenticated R5 Secondary Program Loader (R5 SPL), System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) bring-up on the Device Management and Security Controller (DMSC), Arm Trusted Firmware BL31 (ATF BL31) and Open Portable Trusted Execution Environment BL32 (OP-TEE BL32) on the Arm Cortex-A72 (A72), and a signed handoff to U-Boot or Linux with Replay Protected Memory Block (RPMB)-backed anti-rollback at every stage.",
   participants: [
-    "Boot Read-Only Memory (Device Management and Security Controller)",
-    "R5 SPL (X.509 Auth)",
-    "System Firmware / Texas Instruments System Firmware (Device Management and Security Controller)",
-    "Arm Trusted Firmware BL31 (Arm Cortex-A72) + Open Portable Trusted Execution Environment BL32",
+    "Boot Read-Only Memory (Boot ROM / DMSC)",
+    "R5 Secondary Program Loader (R5 SPL) (X.509 Auth)",
+    "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (DMSC)",
+    "Arm Trusted Firmware BL31 (ATF BL31) (Arm Cortex-A72 / A72) + Open Portable Trusted Execution Environment BL32 (OP-TEE BL32)",
     "U-Boot BL33 / Linux"
   ],
   architecture: {
     nodes: [
-      "Boot Read-Only Memory (Device Management and Security Controller Cortex-R5F, immutable)",
+      "Boot Read-Only Memory (Boot ROM / DMSC Cortex-R5F, immutable)",
       "R5 SPL - X.509 Certificate Auth",
-      "System Firmware / Texas Instruments System Firmware (Power Management, Resource Management, Security Services)",
-      "Arm Trusted Firmware BL31 (EL3 Secure Monitor) + Open Portable Trusted Execution Environment BL32",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Power Management, Resource Management, Security Services)",
+      "Arm Trusted Firmware BL31 (ATF BL31) (EL3 Secure Monitor) + Open Portable Trusted Execution Environment BL32 (OP-TEE BL32)",
       "U-Boot BL33 -> Linux/QNX + R5F Classic domain"
     ],
     links: [
@@ -33,9 +33,9 @@ export const profile = {
       1,
       "ROM Key Check",
       "Boot ROM validates the first boot stage using fused root keys.",
-      "Boot Read-Only Memory (Device Management and Security Controller) -> R5 Secondary Program Loader (X.509 Auth): verifyFirstStage()",
+      "Boot Read-Only Memory (Boot ROM / DMSC) -> R5 Secondary Program Loader (R5 SPL) (X.509 Auth): verifyFirstStage()",
       ["all", "security"],
-      "The immutable Boot Read-Only Memory on the Device Management and Security Controller reads the eFuse root key hash and lifecycle bits, selects boot media from bootmode pins, and validates the R5 Secondary Program Loader's X.509 certificate (SHA-512 hash + RSA or ECDSA signature).",
+      "The immutable Boot Read-Only Memory (Boot ROM) on the Device Management and Security Controller (DMSC) reads the eFuse root key hash and lifecycle bits, selects boot media from bootmode pins, and validates the R5 Secondary Program Loader's (R5 SPL's) X.509 certificate (X.509) with SHA-512 hash plus RSA or ECDSA signature.",
       [
         "sigOk = RootKey.verify(SPL.x509Cert, eFuse.rootKeyHash)",
         "hashOk = Sha512.match(SPL.image)",
@@ -50,10 +50,10 @@ export const profile = {
     mkStep(
       2,
       "SYSFW/TIFS Load",
-      "R5 SPL loads and authenticates the System Firmware / Texas Instruments System Firmware image.",
-      "R5 Secondary Program Loader (X.509 Auth) -> System Firmware / Texas Instruments System Firmware (Device Management and Security Controller): loadAndVerifyTIFS()",
+      "R5 Secondary Program Loader (R5 SPL) loads and authenticates the System Firmware / Texas Instruments System Firmware image.",
+      "R5 Secondary Program Loader (R5 SPL) (X.509 Auth) -> System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC): loadAndVerifyTIFS()",
       ["all", "functional"],
-      "System Firmware / Texas Instruments System Firmware, bundled with board configuration data, is verified and becomes the resident power management, resource management, and security service running on the Device Management and Security Controller for the remainder of the boot.",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS), bundled with board configuration data, is verified and becomes the resident power management, resource management, and security service running on the Device Management and Security Controller (DMSC) for the remainder of the boot.",
       [
         "tifsImg = Parse.read(sysfw.itb)",
         "TIFS.verifySignature()",
@@ -69,9 +69,9 @@ export const profile = {
       3,
       "Partition Hash Validation",
       "Each listed partition hash is verified before execution.",
-      "R5 Secondary Program Loader (X.509 Auth) -> Arm Trusted Firmware BL31 (Arm Cortex-A72) + Open Portable Trusted Execution Environment BL32: verifyPartitionSet()",
+      "R5 Secondary Program Loader (R5 SPL) (X.509 Auth) -> Arm Trusted Firmware BL31 (ATF BL31) (Arm Cortex-A72 / A72) + Open Portable Trusted Execution Environment BL32 (OP-TEE BL32): verifyPartitionSet()",
       ["all", "security"],
-      "Hash mismatch on any partition (Arm Trusted Firmware, Open Portable Trusted Execution Environment, or R5F microcontroller firmware) blocks activation and triggers fail-secure diagnostics.",
+      "Hash mismatch on any partition (Arm Trusted Firmware / ATF, Open Portable Trusted Execution Environment / OP-TEE, or R5F microcontroller firmware) blocks activation and triggers fail-secure diagnostics.",
       [
         "for part in manifest: Sha512.verify(part)",
         "if mismatch: Boot.block(part)",
@@ -87,9 +87,9 @@ export const profile = {
       4,
       "Anti-Rollback Check",
       "Version counters reject signed but stale images.",
-      "System Firmware / Texas Instruments System Firmware (Device Management and Security Controller) -> R5 Secondary Program Loader (X.509 Auth): verifyVersionFreshness()",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC) -> R5 Secondary Program Loader (R5 SPL) (X.509 Auth): verifyVersionFreshness()",
       ["all", "security"],
-      "Each stage's version is checked against the Replay Protected Memory Block and eFuse monotonic counter before execution, enforcing forward-only trust progression.",
+      "Each stage's version is checked against the Replay Protected Memory Block (RPMB) and eFuse monotonic counter before execution, enforcing forward-only trust progression.",
       [
         "if ver < ReplayProtectedMemoryBlock.counter(part): reject",
         "RPMB.counter.update(part, ver)",
@@ -105,9 +105,9 @@ export const profile = {
       5,
       "A72 Domain Handoff",
       "R5 SPL starts the A72 secure monitor and TEE.",
-      "R5 Secondary Program Loader (X.509 Auth) -> Arm Trusted Firmware BL31 (Arm Cortex-A72) + Open Portable Trusted Execution Environment BL32: startSecureMonitor()",
+      "R5 Secondary Program Loader (R5 SPL) (X.509 Auth) -> Arm Trusted Firmware BL31 (ATF BL31) (Arm Cortex-A72 / A72) + Open Portable Trusted Execution Environment BL32 (OP-TEE BL32): startSecureMonitor()",
       ["all", "functional"],
-      "Arm Trusted Firmware BL31 initializes the Exception Level 3 secure monitor on the Arm Cortex-A72 cluster, then loads and verifies Open Portable Trusted Execution Environment BL32 into the reserved secure dynamic random-access memory partition.",
+      "Arm Trusted Firmware BL31 (ATF BL31) initializes the Exception Level 3 (EL3) secure monitor on the Arm Cortex-A72 (A72) cluster, then loads and verifies Open Portable Trusted Execution Environment BL32 (OP-TEE BL32) into the reserved secure dynamic random-access memory (DDR) partition.",
       [
         "ATF.initEL3()",
         "OPTEE.verifySignature()",
@@ -123,9 +123,9 @@ export const profile = {
       6,
       "Secure OS and RPMsg Bring-up",
       "OP-TEE initializes the TEE and links the R5F Classic domain.",
-      "Arm Trusted Firmware BL31 (Arm Cortex-A72) + Open Portable Trusted Execution Environment BL32 -> U-Boot BL33 / Linux: initTeeAndIpc()",
+      "Arm Trusted Firmware BL31 (ATF BL31) (Arm Cortex-A72 / A72) + Open Portable Trusted Execution Environment BL32 (OP-TEE BL32) -> U-Boot BL33 / Linux: initTeeAndIpc()",
       ["all", "security"],
-      "Open Portable Trusted Execution Environment finishes Trusted Execution Environment initialization, establishes the Remote Processor Messaging and mailbox link to the R5F Classic Automotive Open System Architecture domain, then hands control to U-Boot BL33.",
+      "Open Portable Trusted Execution Environment (OP-TEE) finishes Trusted Execution Environment (TEE) initialization, establishes the Remote Processor Messaging (RPMsg) and mailbox link to the R5F Classic Automotive Open System Architecture (AUTOSAR Classic) domain, then hands control to U-Boot BL33.",
       [
         "OPTEE.initTee()",
         "RPMsg.linkClassicDomain()",
@@ -141,7 +141,7 @@ export const profile = {
       7,
       "Fail-Secure Handler",
       "Any trust violation enters a controlled fail-secure path.",
-      "System Firmware / Texas Instruments System Firmware (Device Management and Security Controller) -> U-Boot BL33 / Linux: triggerFailSecure()",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC) -> U-Boot BL33 / Linux: triggerFailSecure()",
       ["all", "error"],
       "A signature, hash, or version mismatch anywhere in the chain halts the boot, captures diagnostics, and blocks sensitive services.",
       [
@@ -159,9 +159,9 @@ export const profile = {
       8,
       "Runtime Release",
       "Trusted boot-complete signal is issued to runtime consumers.",
-      "U-Boot BL33 / Linux -> Boot Read-Only Memory (Device Management and Security Controller): signalBootComplete()",
+      "U-Boot BL33 / Linux -> Boot Read-Only Memory (Boot ROM / DMSC): signalBootComplete()",
       ["all", "functional"],
-      "U-Boot verifies the signed Flattened Image Tree image, boots the Linux or QNX kernel and device-mapper verity-protected root filesystem, and signals boot-complete to the R5F Classic Automotive Open System Architecture domain over Remote Processor Messaging.",
+      "U-Boot verifies the signed Flattened Image Tree (FIT) image, boots the Linux or QNX kernel and device-mapper verity (dm-verity)-protected root filesystem, and signals boot-complete to the R5F Classic Automotive Open System Architecture (AUTOSAR Classic) domain over Remote Processor Messaging (RPMsg).",
       [
         "UBoot.verifyFitImage()",
         "Kernel.bootWithDmVerity()",
@@ -178,12 +178,12 @@ export const profile = {
 
 export const narrative = {
   overviewIntro:
-    "SecureBoot establishes the hardware-rooted chain of trust on TDA4VM, from immutable Boot ROM through DMSC/SYSFW, ATF, OP-TEE, and into the Adaptive (A72) and Classic (R5F) runtime domains. Each stage authenticates the next before releasing control, with anti-rollback checks enforced via eFuse and RPMB.",
+    "SecureBoot establishes the hardware-rooted chain of trust on TDA4VM, from immutable Boot Read-Only Memory (Boot ROM) through Device Management and Security Controller / System Firmware (DMSC / SYSFW), Arm Trusted Firmware (ATF), Open Portable Trusted Execution Environment (OP-TEE), and into the Adaptive (A72) and Classic (R5F) runtime domains. Each stage authenticates the next before releasing control, with anti-rollback checks enforced via eFuse and Replay Protected Memory Block (RPMB).",
   chips: [
     "X.509-authenticated boot stages",
-    "System Firmware / Texas Instruments System Firmware-mediated trust handoff",
-    "eFuse / Replay Protected Memory Block anti-rollback checks",
-    "Arm Trusted Firmware / Open Portable Trusted Execution Environment secure runtime split"
+    "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS)-mediated trust handoff",
+    "eFuse / Replay Protected Memory Block (RPMB) anti-rollback checks",
+    "Arm Trusted Firmware (ATF) / Open Portable Trusted Execution Environment (OP-TEE) secure runtime split"
   ],
   contextCards: [
     {
@@ -192,11 +192,11 @@ export const narrative = {
     },
     {
       title: "Trusted Firmware Handoff",
-      body: "System Firmware / Texas Instruments System Firmware running under the Device Management and Security Controller validates and loads subsequent stages, enforcing anti-rollback checks before handing control to Arm Trusted Firmware BL31 on the Arm Cortex-A72."
+      body: "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) running under the Device Management and Security Controller (DMSC) validates and loads subsequent stages, enforcing anti-rollback checks before handing control to Arm Trusted Firmware BL31 (ATF BL31) on the Arm Cortex-A72 (A72)."
     },
     {
       title: "Runtime Domain Activation",
-      body: "Arm Trusted Firmware BL31 initializes the Exception Level 3 secure monitor, Open Portable Trusted Execution Environment BL32 provides the secure operating system, and Remote Processor Messaging links to the Arm Cortex-R5F Classic domain before U-Boot BL33 starts Linux or QNX."
+      body: "Arm Trusted Firmware BL31 (ATF BL31) initializes the Exception Level 3 (EL3) secure monitor, Open Portable Trusted Execution Environment BL32 (OP-TEE BL32) provides the secure operating system, and Remote Processor Messaging (RPMsg) links to the Arm Cortex-R5F Classic domain before U-Boot BL33 starts Linux or QNX."
     }
   ],
   controlCards: [
@@ -265,9 +265,9 @@ export const narrative = {
     "Enables measured boot attestation for fleet-wide integrity verification."
   ],
   summaryBullets: [
-    "SecureBoot must authenticate every stage from Boot Read-Only Memory through operating system handoff.",
+    "SecureBoot must authenticate every stage from Boot Read-Only Memory (Boot ROM) through operating system handoff.",
     "Anti-rollback checks are mandatory to prevent downgrade attacks.",
-    "Exception Level 3 and secure-world isolation protects trusted services from compromise.",
+    "Exception Level 3 (EL3) and secure-world isolation protects trusted services from compromise.",
     "Measured boot attestation supports fleet-level integrity assurance."
   ],
   summaryAssumptions:

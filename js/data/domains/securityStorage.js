@@ -4,28 +4,28 @@ export const profile = {
   title: "SecurityStorage Internal Explorer",
   flowTitle: "SecurityStorage Flow Walkthrough",
   context:
-    "SecurityStorage protects Advanced Driver Assistance Systems calibration, policy, and runtime state using the Texas Instruments Security Accelerator hardware crypto block, Hardware Unique Key-derived object keys, and a Replay Protected Memory Block-backed anti-rollback counter, matching Texas Instruments K3 (J721E/TDA4VM) secure storage practice.",
+    "SecurityStorage protects Advanced Driver Assistance Systems (ADAS) calibration, policy, and runtime state using the Texas Instruments Security Accelerator (SA2UL) hardware crypto block, Hardware Unique Key (HUK)-derived object keys, and a Replay Protected Memory Block (RPMB)-backed anti-rollback counter, matching Texas Instruments K3 (J721E/TDA4VM) secure storage practice.",
   participants: [
-    "Adaptive application (Arm Cortex-A72)",
+    "Adaptive application (A72 / Arm Cortex-A72)",
     "Storage Service API",
     "Classic Storage Core",
-    "Texas Instruments Security Accelerator crypto block",
-    "embedded MultiMediaCard Replay Protected Memory Block / Octal Serial Peripheral Interface flash"
+    "Texas Instruments Security Accelerator (SA2UL) crypto block",
+    "embedded MultiMediaCard (eMMC) Replay Protected Memory Block (RPMB) / Octal Serial Peripheral Interface (OSPI) flash"
   ],
   architecture: {
     nodes: [
-      "Adaptive application cluster (Arm Cortex-A72, Linux or QNX)",
+      "Adaptive application cluster (A72 / Arm Cortex-A72, Linux or QNX)",
       "Storage Service API (PSA-style)",
-      "Classic Storage Core (Arm Cortex-R5F, Automotive Open System Architecture Classic)",
-      "Texas Instruments Security Accelerator crypto block",
-      "Octal Serial Peripheral Interface NOR + embedded MultiMediaCard Replay Protected Memory Block"
+      "Classic Storage Core (R5F / Arm Cortex-R5F, Automotive Open System Architecture (AUTOSAR) Classic)",
+      "Texas Instruments Security Accelerator (SA2UL) crypto block",
+      "Octal Serial Peripheral Interface (OSPI) NOR + embedded MultiMediaCard (eMMC) Replay Protected Memory Block (RPMB)"
     ],
     links: [
-      "Trusted boot handoff (Arm Trusted Firmware and Open Portable Trusted Execution Environment to Classic domain)",
-      "Authenticated inter-process communication over NAVSS mailbox and Remote Processor Messaging",
+      "Trusted boot handoff (Arm Trusted Firmware (ATF) and Open Portable Trusted Execution Environment (OP-TEE) to Classic domain)",
+      "Authenticated inter-process communication (IPC) over NAVSS mailbox and Remote Processor Messaging (RPMsg)",
       "Policy + freshness checks",
-      "Hardware Unique Key-derived key wrap, Advanced Encryption Standard 256-bit Galois/Counter Mode encrypt, Secure Hash Algorithm 256-bit message authentication code",
-      "Atomic commit + Replay Protected Memory Block monotonic counter rollback guard"
+      "Hardware Unique Key (HUK)-derived key wrap, Advanced Encryption Standard (AES) 256-bit Galois/Counter Mode (GCM) encrypt, Secure Hash Algorithm (SHA) 256-bit message authentication code (MAC)",
+      "Atomic commit + Replay Protected Memory Block (RPMB) monotonic counter rollback guard"
     ]
   },
   steps: [
@@ -35,7 +35,7 @@ export const profile = {
       "Boot trust completion triggers secure storage initialization.",
       "Storage Service API -> Classic Storage Core: initStorage()",
       ["all", "functional"],
-      "The core confirms the System Firmware / Texas Instruments System Firmware attestation token over Remote Processor Messaging, then validates partition metadata, journal state, and lifecycle policy before opening interfaces.",
+      "The core confirms the System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) attestation token over Remote Processor Messaging (RPMsg), then validates partition metadata, journal state, and lifecycle policy before opening interfaces.",
       [
         "if !Attestation.fromTIFS(): return E_TRUST",
         "Partition.verifyHeader()",
@@ -52,9 +52,9 @@ export const profile = {
       2,
       "Provisioning",
       "Object classes, key references, and ACL bindings are provisioned.",
-      "Classic Storage Core -> Texas Instruments Security Accelerator crypto block: deriveWrapObjectKey()",
+      "Classic Storage Core -> Texas Instruments Security Accelerator (SA2UL) crypto block: deriveWrapObjectKey()",
       ["all", "security"],
-      "Texas Instruments Security Accelerator derives a per-object key from the Hardware Unique Key via a key derivation function and wraps it; provisioning binds identity, object namespace, and wrapped key metadata for persistent trust.",
+      "Texas Instruments Security Accelerator (SA2UL) derives a per-object key from the Hardware Unique Key (HUK) via a key derivation function (KDF) and wraps it; provisioning binds identity, object namespace, and wrapped key metadata for persistent trust.",
       [
         "obj = Object.create(class)",
         "k = SecurityAccelerator.keyDerivationFunction(HardwareUniqueKey, obj.id)",
@@ -63,7 +63,7 @@ export const profile = {
       ],
       [
         "[SST] provisioning txn start",
-        "[SA2UL] object key derived from Hardware Unique Key",
+        "[SA2UL] object key derived from Hardware Unique Key (HUK)",
         "[SST] metadata committed"
       ]
     ),
@@ -71,7 +71,7 @@ export const profile = {
       3,
       "Write Request",
       "Application submits secure write request.",
-      "Adaptive application (Arm Cortex-A72) -> Storage Service API: writeObject()",
+      "Adaptive application (A72 / Arm Cortex-A72) -> Storage Service API: writeObject()",
       ["all", "functional"],
       "API gateway validates caller token and passes normalized request to storage core over the authenticated IPC path.",
       [
@@ -91,7 +91,7 @@ export const profile = {
       "ACL, lifecycle, freshness, and payload schema checks execute.",
       "Storage Service API -> Classic Storage Core: authorizeAndValidate()",
       ["all", "security"],
-      "The core enforces object class policy, payload constraints, and replay or freshness checks against the Replay Protected Memory Block monotonic counter.",
+      "The core enforces object class policy, payload constraints, and replay or freshness checks against the Replay Protected Memory Block (RPMB) monotonic counter.",
       [
         "Policy.allow(caller, object, WRITE)",
         "Schema.validate(payload)",
@@ -107,9 +107,9 @@ export const profile = {
       5,
       "Encrypt and Tag",
       "Payload is encrypted and integrity tagged.",
-      "Classic Storage Core -> Texas Instruments Security Accelerator crypto block: encryptAndTag()",
+      "Classic Storage Core -> Texas Instruments Security Accelerator (SA2UL) crypto block: encryptAndTag()",
       ["all", "security"],
-      "The security accelerator performs Advanced Encryption Standard 256-bit Galois/Counter Mode encryption and a Secure Hash Algorithm 256-bit message authentication code binding object identity and version to prevent substitution.",
+      "The security accelerator performs Advanced Encryption Standard (AES) 256-bit Galois/Counter Mode (GCM) encryption and a Secure Hash Algorithm (SHA) 256-bit message authentication code (MAC) binding object identity and version to prevent substitution.",
       [
         "nonce = SecurityAccelerator.trueRandomNumberGenerator()",
         "ct = SecurityAccelerator.aesGcmEncrypt(k_obj, payload)",
@@ -117,8 +117,8 @@ export const profile = {
         "record = Pack(meta, ct, tag)"
       ],
       [
-        "[SA2UL] Advanced Encryption Standard 256-bit Galois/Counter Mode encryption complete",
-        "[SA2UL] Secure Hash Algorithm 256-bit message authentication code generated",
+        "[SA2UL] Advanced Encryption Standard (AES) 256-bit Galois/Counter Mode (GCM) encryption complete",
+        "[SA2UL] Secure Hash Algorithm (SHA) 256-bit message authentication code (MAC) generated",
         "[CORE] protected record built"
       ]
     ),
@@ -126,9 +126,9 @@ export const profile = {
       6,
       "Atomic Commit",
       "Protected record is atomically committed to secure flash.",
-      "Classic Storage Core -> embedded MultiMediaCard Replay Protected Memory Block / Octal Serial Peripheral Interface flash: commitRecord()",
+      "Classic Storage Core -> embedded MultiMediaCard (eMMC) Replay Protected Memory Block (RPMB) / Octal Serial Peripheral Interface (OSPI) flash: commitRecord()",
       ["all", "functional"],
-      "Pending marker, slot write, readback verify, and active pointer flip prevent anti-tear corruption on Octal Serial Peripheral Interface NOR.",
+      "Pending marker, slot write, readback verify, and active pointer flip prevent anti-tear corruption on Octal Serial Peripheral Interface (OSPI) NOR.",
       [
         "Journal.markPending(txn)",
         "Flash.write(slotB, record)",
@@ -145,9 +145,9 @@ export const profile = {
       7,
       "Rollback Guard",
       "Version monotonicity blocks stale replay attempts.",
-      "Classic Storage Core -> embedded MultiMediaCard Replay Protected Memory Block / Octal Serial Peripheral Interface flash: enforceRollbackGuard()",
+      "Classic Storage Core -> embedded MultiMediaCard (eMMC) Replay Protected Memory Block (RPMB) / Octal Serial Peripheral Interface (OSPI) flash: enforceRollbackGuard()",
       ["all", "security", "error"],
-      "Signed update metadata plus the Replay Protected Memory Block monotonic write counter reject old records, mirroring Open Portable Trusted Execution Environment anti-rollback design.",
+      "Signed update metadata plus the Replay Protected Memory Block (RPMB) monotonic write counter reject old records, mirroring Open Portable Trusted Execution Environment (OP-TEE) anti-rollback design.",
       [
         "if ver < RPMB.counter(): return E_ROLLBACK",
         "UpdateMeta.verifySignature()",
@@ -182,7 +182,7 @@ export const profile = {
 
 export const narrative = {
   overviewIntro:
-    "SecurityStorage is the trusted persistence layer for protected Advanced Driver Assistance Systems data such as cryptographic material, policy-bound configuration, calibration constraints, and runtime security state. It enforces confidentiality, integrity, authenticity, and rollback resistance while operating under embedded memory and timing constraints.",
+    "SecurityStorage is the trusted persistence layer for protected Advanced Driver Assistance Systems (ADAS) data such as cryptographic material, policy-bound configuration, calibration constraints, and runtime security state. It enforces confidentiality, integrity, authenticity, and rollback resistance while operating under embedded memory and timing constraints.",
   chips: [
     "Secure key and secret handling",
     "Policy-bound storage access",
@@ -192,15 +192,15 @@ export const narrative = {
   contextCards: [
     {
       title: "Boot & Trust Chain",
-      body: "Boot Read-Only Memory and the secondary bootloader on Texas Instruments TDA4VM validate signed boot images, then release the Arm Cortex-A72 and Arm Cortex-R5F partitions. SecurityStorage activation occurs only after chain-of-trust and lifecycle checks pass."
+      body: "Boot Read-Only Memory (Boot ROM) and the secondary bootloader on Texas Instruments TDA4VM validate signed boot images, then release the Arm Cortex-A72 (A72) and Arm Cortex-R5F (R5F) partitions. SecurityStorage activation occurs only after chain-of-trust and lifecycle checks pass."
     },
     {
       title: "Runtime Services",
-      body: "Adaptive applications on the Arm Cortex-A72 call storage APIs while Classic services on the Arm Cortex-R5F enforce policy, diagnostics, and real-time coordination through controlled inter-process communication channels."
+      body: "Adaptive applications on the Arm Cortex-A72 (A72) call storage APIs while Classic services on the Arm Cortex-R5F (R5F) enforce policy, diagnostics, and real-time coordination through controlled inter-process communication (IPC) channels."
     },
     {
       title: "Secure Update Path",
-      body: "Over-the-air or workshop updates validate signed bundles, run schema migration, and enforce anti-rollback counters before secure state transitions are committed."
+      body: "Over-the-air (OTA) or workshop updates validate signed bundles, run schema migration, and enforce anti-rollback counters before secure state transitions are committed."
     }
   ],
   controlCards: [
@@ -210,7 +210,7 @@ export const narrative = {
     },
     {
       title: "Integrity & Authenticity",
-      body: "Every object write includes message authentication code or checksum validation gates, version counters, and metadata consistency checks."
+      body: "Every object write includes message authentication code (MAC) or checksum validation gates, version counters, and metadata consistency checks."
     },
     {
       title: "Access Governance",
@@ -271,7 +271,7 @@ export const narrative = {
   summaryBullets: [
     "SecurityStorage must preserve confidentiality, integrity, and controlled access under embedded constraints.",
     "Atomic operations, versioning, and diagnostics are mandatory for robust automotive behavior.",
-    "Update and rollback defenses are central to long-term Advanced Driver Assistance Systems security assurance.",
+    "Update and rollback defenses are central to long-term Advanced Driver Assistance Systems (ADAS) security assurance.",
     "Review readiness improves when sequence, backend logs, and threat responses are all visible."
   ],
   summaryAssumptions:
