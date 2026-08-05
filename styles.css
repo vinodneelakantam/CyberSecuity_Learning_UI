@@ -432,6 +432,36 @@ main {
   text-align: center;
 }
 
+.arch-links span:nth-child(1) {
+  border-color: rgba(96, 165, 250, 0.45);
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.14), rgba(9, 18, 30, 0.84));
+  color: #d8e8ff;
+}
+
+.arch-links span:nth-child(2) {
+  border-color: rgba(90, 215, 255, 0.45);
+  background: linear-gradient(180deg, rgba(90, 215, 255, 0.14), rgba(9, 18, 30, 0.84));
+  color: #dcf9ff;
+}
+
+.arch-links span:nth-child(3) {
+  border-color: rgba(67, 211, 158, 0.45);
+  background: linear-gradient(180deg, rgba(67, 211, 158, 0.14), rgba(9, 18, 30, 0.84));
+  color: #ddfef0;
+}
+
+.arch-footer span:nth-child(1) {
+  border-color: rgba(139, 124, 255, 0.45);
+  background: linear-gradient(180deg, rgba(139, 124, 255, 0.14), rgba(9, 18, 30, 0.84));
+  color: #ece7ff;
+}
+
+.arch-footer span:nth-child(2) {
+  border-color: rgba(242, 184, 75, 0.5);
+  background: linear-gradient(180deg, rgba(242, 184, 75, 0.16), rgba(9, 18, 30, 0.84));
+  color: #fff0cd;
+}
+
 /* ---------- Lifecycle state machine ---------- */
 
 .state-machine {
@@ -635,15 +665,15 @@ input[type="search"]::placeholder {
   background-size: 28px 28px, 28px 28px, auto;
   padding: 0.5rem;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .sequence-svg {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   height: auto;
   display: block;
-  min-width: 100%;
 }
 
 .seq-actor {
