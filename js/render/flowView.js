@@ -44,6 +44,40 @@ function safeBBox(el, fallback) {
   return fallback;
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function syncActiveStepIntoView() {
+  const activeListItem = sequenceList.querySelector('li.active');
+  if (activeListItem) {
+    activeListItem.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "auto" });
+  }
+
+  const activeDiagramEvent = diagramEvents.querySelector('.diagram-event.active');
+  if (activeDiagramEvent) {
+    activeDiagramEvent.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "auto" });
+  }
+
+  const activeMessage = sequenceSvg.querySelector('.seq-message.active');
+  if (!activeMessage) {
+    return;
+  }
+
+  const box = safeBBox(activeMessage, null);
+  if (!box) {
+    return;
+  }
+
+  const maxLeft = Math.max(0, sequenceDiagram.scrollWidth - sequenceDiagram.clientWidth);
+  const maxTop = Math.max(0, sequenceDiagram.scrollHeight - sequenceDiagram.clientHeight);
+  const pad = 28;
+  const targetLeft = clamp(box.x + box.width / 2 - sequenceDiagram.clientWidth / 2, 0, maxLeft);
+  const targetTop = clamp(box.y + box.height / 2 - sequenceDiagram.clientHeight / 2 - pad, 0, maxTop);
+
+  sequenceDiagram.scrollTo({ left: targetLeft, top: targetTop, behavior: "auto" });
+}
+
 function parseEvent(event) {
   const match = event.match(/^(.+?)\s*(->|<-)\s*(.+?):\s*(.+)$/);
   if (!match) {
@@ -275,7 +309,8 @@ export function renderStep() {
 
   activeStepId.textContent = `STEP ${step.id}`;
   activeStepTitle.textContent = step.title;
-  activeStepSummary.textContent = step[mode];
+  // Keep the top summary concise; detailed mode-specific content stays in Deep Dive.
+  activeStepSummary.textContent = step.summary;
   activeStepDeepDive.textContent = step.deepDive;
   activeStepPseudo.textContent = step.pseudo.join("\n");
 
@@ -295,6 +330,8 @@ export function renderStep() {
     const idx = Number(el.getAttribute("data-index"));
     el.classList.toggle("active", idx === state.currentStepIndex);
   });
+
+  syncActiveStepIntoView();
 
   progressFill.style.width = `${((state.currentStepIndex + 1) / state.steps.length) * 100}%`;
   progressText.textContent = `Step ${state.currentStepIndex + 1} / ${state.steps.length}`;
