@@ -3,6 +3,7 @@ export const sequenceList = document.getElementById("sequenceList");
 export const sequenceDiagram = document.getElementById("sequenceDiagram");
 export const sequenceSvg = document.getElementById("sequenceSvg");
 export const diagramEvents = document.getElementById("diagramEvents");
+export const playbackLayout = document.getElementById("playbackLayout");
 export const activeStepId = document.getElementById("activeStepId");
 export const activeStepTitle = document.getElementById("activeStepTitle");
 export const activeStepSummary = document.getElementById("activeStepSummary");

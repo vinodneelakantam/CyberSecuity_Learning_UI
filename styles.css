@@ -1,5 +1,4 @@
 :root {
-  --header-height: 5vh;
   --cursor-x: 50vw;
   --cursor-y: 20vh;
   --bg: #070c14;
@@ -79,19 +78,17 @@ body {
 /* ---------- Header ---------- */
 
 .site-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 40;
-  min-height: var(--header-height);
-  max-height: var(--header-height);
-  overflow-y: scroll;
-  scrollbar-gutter: stable both-edges;
-  padding: 1rem clamp(1rem, 4vw, 3rem) 0.9rem;
-  background: rgba(7, 12, 20, 0.82);
+  width: 100%;
+  margin: 0;
+  padding: 1rem clamp(0.9rem, 2vw, 1.35rem) 1rem;
+  background: rgba(7, 12, 20, 0.9);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .site-header::before {
@@ -141,10 +138,13 @@ body {
 }
 
 .main-nav {
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
 }
 
 .main-nav a {
@@ -152,6 +152,7 @@ body {
   color: var(--ink-soft);
   font-weight: 500;
   font-size: 0.88rem;
+  white-space: nowrap;
   padding: 0.4rem 0.82rem;
   border-radius: 999px;
   border: 1px solid var(--border);
@@ -168,11 +169,11 @@ body {
 }
 
 .selector-strip {
-  margin-top: 1.15rem;
-  display: flex;
-  flex-wrap: wrap;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 0.85rem;
-  align-items: end;
+  align-items: stretch;
   padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -181,7 +182,6 @@ body {
 
 .selector-strip label {
   display: flex;
-  flex: 1 1 190px;
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.78rem;
@@ -192,26 +192,33 @@ body {
 }
 
 .selector-strip .search-wrap {
-  flex: 1 1 240px;
+  min-width: 220px;
 }
 
 .selector-strip .btn {
-  flex: 0 0 auto;
+  min-height: 42px;
+  align-self: end;
 }
 
 .site-header .playback-controls {
-  margin-top: 0.85rem;
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 }
 
 .site-header .progress-wrap {
-  max-width: 320px;
+  margin-top: 0.9rem;
+  max-width: none;
 }
 
 /* ---------- Layout / Panels ---------- */
 
 main {
-  padding: calc(var(--header-height) + 1.1rem) clamp(1rem, 4vw, 3rem) 3rem;
+  padding: 1rem clamp(0.75rem, 2vw, 1.25rem) 2.2rem;
+  margin: 0;
   width: 100%;
+  display: grid;
+  gap: 1rem;
 }
 
 .panel {
@@ -546,11 +553,11 @@ input[type="search"]::placeholder {
 
 .playback-layout {
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-  grid-template-areas:
-    "sequence diagram"
-    "log log";
-  gap: 0.85rem;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1.15fr) minmax(320px, 0.9fr);
+  grid-template-areas: "sequence diagram log";
+  gap: 0.95rem;
+  min-height: min(72vh, 760px);
+  max-height: min(72vh, 760px);
 }
 
 .sequence-column,
@@ -561,6 +568,9 @@ input[type="search"]::placeholder {
   border-radius: var(--radius-sm);
   background: var(--surface-alt);
   padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .sequence-column {
@@ -579,7 +589,8 @@ input[type="search"]::placeholder {
   margin: 0;
   padding-left: 0;
   list-style: none;
-  height: min(52vh, 520px);
+  flex: 1;
+  min-height: 0;
   overflow-y: scroll;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -615,6 +626,8 @@ input[type="search"]::placeholder {
 }
 
 .diagram {
+  flex: 1;
+  min-height: 320px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background:
@@ -716,7 +729,7 @@ input[type="search"]::placeholder {
 
 .diagram-events {
   margin-top: 0.6rem;
-  max-height: 170px;
+  max-height: 190px;
   overflow: auto;
 }
 
@@ -757,6 +770,15 @@ input[type="search"]::placeholder {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.playback-layout.backend-mode {
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  grid-template-areas: "sequence log";
+}
+
+.playback-layout.backend-mode .log-column {
+  grid-area: log;
 }
 
 .btn {
@@ -876,9 +898,9 @@ input[type="search"]::placeholder {
   border-radius: 8px;
   background: #05090f;
   color: #7ce9d8;
-  min-height: 190px;
-  height: min(32vh, 280px);
-  max-height: min(32vh, 280px);
+  min-height: 200px;
+  height: 100%;
+  max-height: none;
   overflow-y: scroll;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -886,6 +908,15 @@ input[type="search"]::placeholder {
   font-family: "IBM Plex Mono", "Consolas", monospace;
   font-size: 0.83rem;
   position: relative;
+}
+
+.log-column .active-step-card {
+  flex: 0 0 auto;
+}
+
+.log-column .log-panel {
+  flex: 1;
+  min-height: 0;
 }
 
 .log-panel::before {
@@ -1094,7 +1125,9 @@ input[type="search"]::placeholder {
 /* ---------- Footer ---------- */
 
 .site-footer {
-  padding: 1.2rem clamp(1rem, 4vw, 3rem) 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 1.2rem clamp(0.9rem, 2vw, 1.2rem) 2rem;
   color: var(--ink-faint);
   text-align: center;
   font-size: 0.85rem;
@@ -1134,6 +1167,35 @@ input[type="search"]::placeholder {
 
 /* ---------- Responsive ---------- */
 
+@media (max-width: 1420px) {
+  .playback-layout {
+    grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+    grid-template-areas:
+      "sequence diagram"
+      "log log";
+    min-height: auto;
+    max-height: none;
+  }
+
+  .sequence-list {
+    min-height: 300px;
+    max-height: min(44vh, 420px);
+  }
+
+  .diagram {
+    min-height: 360px;
+  }
+
+  .log-column {
+    min-height: min(50vh, 520px);
+  }
+
+  .log-panel {
+    min-height: 230px;
+    max-height: min(32vh, 320px);
+  }
+}
+
 @media (max-width: 1180px) {
   .playback-layout {
     grid-template-columns: 1fr;
@@ -1141,21 +1203,43 @@ input[type="search"]::placeholder {
       "sequence"
       "diagram"
       "log";
+    min-height: auto;
+    max-height: none;
   }
 
   .sequence-list {
-    max-height: 260px;
+    min-height: 240px;
+    max-height: 320px;
   }
 
-  .selector-strip label {
-    flex-basis: 100%;
+  .selector-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-header {
+    width: 100%;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 840px) {
+  .site-header {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+
+  main {
+    padding-top: 0.55rem;
+  }
+
   .grid-2,
   .grid-3,
   .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .selector-strip {
     grid-template-columns: 1fr;
   }
 
@@ -1172,5 +1256,9 @@ input[type="search"]::placeholder {
 
   .site-header .progress-wrap {
     max-width: none;
+  }
+
+  .playback-controls {
+    grid-template-columns: 1fr 1fr;
   }
 }

@@ -14,6 +14,7 @@ import {
   progressText,
   playPauseBtn,
   learningMode,
+  playbackLayout,
   diagramColumn,
   logColumn
 } from "../dom.js";
@@ -341,10 +342,12 @@ export function setTab(tab) {
 
 export function applyViewMode(mode) {
   if (mode === "backend") {
+    playbackLayout.classList.add("backend-mode");
     diagramColumn.style.display = "none";
-    logColumn.style.display = "block";
+    logColumn.style.display = "flex";
   } else {
-    diagramColumn.style.display = "block";
-    logColumn.style.display = "block";
+    playbackLayout.classList.remove("backend-mode");
+    diagramColumn.style.display = "flex";
+    logColumn.style.display = "flex";
   }
 }
