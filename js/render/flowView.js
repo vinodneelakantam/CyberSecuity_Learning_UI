@@ -110,6 +110,40 @@ function fitLabel(label, maxPx, charPx = 6.6) {
   return `${label.slice(0, maxChars - 3)}...`;
 }
 
+function compactParticipantName(name) {
+  const parenGroups = [...name.matchAll(/\(([^)]+)\)/g)].map((m) => m[1]);
+  for (const group of parenGroups) {
+    const token = group
+      .split(/[\/,+]/)
+      .map((s) => s.trim())
+      .find((s) => /^[A-Z0-9\- ]{2,20}$/.test(s));
+    if (token) {
+      return token;
+    }
+  }
+
+  const cleaned = name
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/Device Management and Security Controller/gi, "DMSC")
+    .replace(/Texas Instruments System Firmware/gi, "SYSFW")
+    .replace(/System Firmware/gi, "SYSFW")
+    .replace(/Texas Instruments Security Accelerator/gi, "SA2UL")
+    .replace(/Unified Diagnostic Services/gi, "UDS")
+    .replace(/Diagnostics over Internet Protocol/gi, "DoIP")
+    .replace(/Diagnostic Event Manager/gi, "DEM")
+    .replace(/Remote Processor Messaging/gi, "RPMsg")
+    .replace(/Open Portable Trusted Execution Environment/gi, "OP-TEE")
+    .replace(/Arm Trusted Firmware/gi, "ATF")
+    .replace(/Automotive Open System Architecture/gi, "AUTOSAR")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleaned.length <= 26) {
+    return cleaned;
+  }
+  return `${cleaned.slice(0, 23)}...`;
+}
+
 export function renderSequence() {
   sequenceList.innerHTML = "";
   state.steps.forEach((step, index) => {
@@ -128,16 +162,17 @@ export function renderSequence() {
 
 export function renderDiagram() {
   const participants = getParticipants();
+  const participantLabels = participants.map((p) => compactParticipantName(p));
   // Measure the scroll container, not the SVG itself, so the diagram fits without unnecessary scrolling.
   const baseWidth = (sequenceDiagram.clientWidth || 820) - 8;
-  const width = Math.max(baseWidth, participants.length * 150) * 1.3;
+  const width = Math.max(baseWidth, participants.length * 110) * 1.02;
   const topY = 40;
   const firstMsgY = 104;
   const msgGap = 56;
   const bottomY = firstMsgY + msgGap * state.steps.length;
-  const gutterX = 26;
-  const leftPad = 78;
-  const rightPad = 60;
+  const gutterX = 13;
+  const leftPad = 95;
+  const rightPad = 90;
   const actorGap = (width - leftPad - rightPad) / Math.max(1, participants.length - 1);
 
   sequenceSvg.setAttribute("width", `${width}`);
@@ -161,7 +196,7 @@ export function renderDiagram() {
 
   participants.forEach((name, i) => {
     const x = leftPad + actorGap * i;
-    const actorLabel = fitLabel(name, Math.max(120, actorGap - 18), 7.2);
+    const actorLabel = fitLabel(participantLabels[i], Math.max(120, actorGap - 18), 7.2);
     const actorText = createSvgElement("text", {
       x,
       y: 26,
@@ -298,7 +333,9 @@ export function renderDiagram() {
     if (state.activeTab !== "all" && !step.category.includes(state.activeTab)) {
       node.classList.add("filtered");
     }
-    node.innerHTML = `<strong>${step.id}.</strong> ${parsed.from} -> ${parsed.to}: ${parsed.label}`;
+    const fromLabel = participantLabels[fromIdx] || parsed.from;
+    const toLabel = participantLabels[toIdx] || parsed.to;
+    node.innerHTML = `<strong>${step.id}.</strong> ${fromLabel} -> ${toLabel}: ${parsed.label}`;
     diagramEvents.appendChild(node);
   });
 }
