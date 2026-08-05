@@ -1,5 +1,4 @@
 import { domainProfiles } from "./data/domains/index.js";
-import { platformProfiles } from "./data/platforms.js";
 import { state } from "./state.js";
 import {
   learningMode,
@@ -7,11 +6,8 @@ import {
   domainSelect,
   platformSelect,
   pageTitle,
-  currentTopicTitle,
   flowTitle,
-  flowSubtitle,
-  referenceProfileText,
-  domainContextNote
+  flowSubtitle
 } from "./dom.js";
 import { renderArchitecture } from "./render/architecture.js";
 import { renderNarrative } from "./render/narrative.js";
@@ -31,18 +27,14 @@ import { renderGlossary, renderQuiz, gradeQuiz, populateConceptOptions, jumpToCo
 
 function applySelections() {
   const domain = domainProfiles[state.activeDomainKey];
-  const platform = platformProfiles[state.activePlatformKey];
 
   state.steps = domain.steps;
   state.currentStepIndex = 0;
   pausePlayback();
 
   pageTitle.textContent = "ADAS Embedded Security Learning Workbench";
-  currentTopicTitle.textContent = `Current Topic: ${domain.title.replace(" Internal Explorer", "")}`;
   flowTitle.textContent = domain.flowTitle;
   flowSubtitle.textContent = `Numbered sequence and backend behavior for ${domain.title}. Use playback controls to run a guided simulation.`;
-  referenceProfileText.textContent = platform.referenceProfile;
-  domainContextNote.textContent = `${domain.context} Platform profile: ${platform.introSuffix}`;
 
   renderNarrative();
   renderArchitecture();

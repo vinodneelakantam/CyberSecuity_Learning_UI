@@ -17,18 +17,10 @@
 
     <header class="site-header" id="top">
       <div class="title-wrap">
-        <p class="eyebrow">ADAS EMBEDDED SECURITY TRAINING SIMULATOR</p>
         <h1 id="pageTitle">ADAS Embedded Security Learning Workbench</h1>
-        <p class="intro-text">
-          Interactive simulator for TI Jacinto/TDA4 security architecture, built for engineers to review
-          internal behavior of secure services across Classic/Adaptive split deployments.
-        </p>
-        <p id="currentTopicTitle" class="chip">Current Topic: SecurityStorage</p>
       </div>
 
       <nav class="main-nav" aria-label="Main navigation">
-        <a href="#overview">Overview</a>
-        <a href="#context">System Context</a>
         <a href="#flow">Internal Flow</a>
         <a href="#controls">Security Controls</a>
         <a href="#resilience">Failure & Recovery</a>
@@ -103,31 +95,6 @@
     </header>
 
     <main>
-      <section id="overview" class="panel reveal">
-        <h2>Introduction</h2>
-        <p id="overviewIntro"></p>
-        <div class="chips" id="overviewChips"></div>
-        <div class="placeholder-note">
-          <strong>Reference project profile:</strong>
-          <span id="referenceProfileText">
-            TI Jacinto TDA4VM ADAS Domain Controller, AUTOSAR Adaptive workload on A72 Linux/QNX partition
-            with AUTOSAR Classic security services on lockstep R5F, secure flash partitions
-            <em>sstore_a</em>/<em>sstore_b</em> (2 x 256 KB) plus 32 KB journal, DMSC/HSM-assisted cryptography,
-            and diagnostics mapped to UDS DTC ranges 0xC4A1-0xC4AF for storage security events.
-          </span>
-        </div>
-        <p id="domainContextNote" class="intro-text"></p>
-      </section>
-
-      <section id="context" class="panel reveal">
-        <h2>System Context</h2>
-        <div class="grid-3" id="contextGrid"></div>
-        <p class="placeholder-note">
-          Visual simulator is below in Internal Flow. Architecture and sequence views are synchronized with
-          your selected security topic and platform.
-        </p>
-      </section>
-
       <section id="flow" class="panel reveal">
         <h2 id="flowTitle">Internal Flow Walkthrough</h2>
         <p id="flowSubtitle">

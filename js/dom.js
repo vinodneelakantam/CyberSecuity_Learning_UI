@@ -23,11 +23,8 @@ export const quizResult = document.getElementById("quizResult");
 export const domainSelect = document.getElementById("domainSelect");
 export const platformSelect = document.getElementById("platformSelect");
 export const pageTitle = document.getElementById("pageTitle");
-export const currentTopicTitle = document.getElementById("currentTopicTitle");
 export const flowTitle = document.getElementById("flowTitle");
 export const flowSubtitle = document.getElementById("flowSubtitle");
-export const referenceProfileText = document.getElementById("referenceProfileText");
-export const domainContextNote = document.getElementById("domainContextNote");
 
 export const archNode1 = document.getElementById("archNode1");
 export const archNode2 = document.getElementById("archNode2");

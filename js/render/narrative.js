@@ -5,15 +5,6 @@ export function renderNarrative() {
   const narrative = domainNarratives[state.activeDomainKey];
   const domain = domainProfiles[state.activeDomainKey];
 
-  document.getElementById("overviewIntro").textContent = narrative.overviewIntro;
-  document.getElementById("overviewChips").innerHTML = narrative.chips
-    .map((chip) => `<span class="chip">${chip}</span>`)
-    .join("");
-
-  document.getElementById("contextGrid").innerHTML = narrative.contextCards
-    .map((card) => `<article class="card"><h3>${card.title}</h3><p>${card.body}</p></article>`)
-    .join("");
-
   document.getElementById("lifecycleView").innerHTML = narrative.lifecycle
     .map((stage, index) => {
       const stateClass = stage.variant ? ` state-${stage.variant}` : "";
