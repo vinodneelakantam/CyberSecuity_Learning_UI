@@ -32,6 +32,18 @@ function createSvgElement(name, attrs = {}) {
   return el;
 }
 
+function safeBBox(el, fallback) {
+  try {
+    const box = el.getBBox();
+    if (Number.isFinite(box?.width) && Number.isFinite(box?.height)) {
+      return box;
+    }
+  } catch {
+    // Some browser/render timing combinations throw here; fallback keeps UI usable.
+  }
+  return fallback;
+}
+
 function parseEvent(event) {
   const match = event.match(/^(.+?)\s*(->|<-)\s*(.+?):\s*(.+)$/);
   if (!match) {
@@ -109,7 +121,12 @@ export function renderDiagram() {
     });
     actorText.textContent = name;
     sequenceSvg.appendChild(actorText);
-    const textBox = actorText.getBBox();
+    const textBox = safeBBox(actorText, {
+      x: x - 60,
+      y: 8,
+      width: Math.max(120, name.length * 7.3),
+      height: 16
+    });
     const maxBoxWidth = Math.max(120, actorGap - 14);
     const boxWidth = Math.min(Math.max(textBox.width + 22, 120), maxBoxWidth);
     const actorBox = createSvgElement("rect", {
@@ -206,7 +223,12 @@ export function renderDiagram() {
     msgText.textContent = parsed.label;
 
     group.appendChild(msgText);
-    const msgBox = msgText.getBBox();
+    const msgBox = safeBBox(msgText, {
+      x: midX - Math.max(36, parsed.label.length * 3.3),
+      y: y - 24,
+      width: Math.max(72, parsed.label.length * 6.6),
+      height: 14
+    });
     const msgBg = createSvgElement("rect", {
       x: msgBox.x - 6,
       y: msgBox.y - 3,
