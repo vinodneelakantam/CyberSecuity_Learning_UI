@@ -62,6 +62,20 @@ function parseEvent(event) {
   return { from: right, to: left, label };
 }
 
+function fitLabel(label, maxPx, charPx = 6.6) {
+  if (!label) {
+    return "";
+  }
+  const maxChars = Math.max(8, Math.floor(maxPx / charPx));
+  if (label.length <= maxChars) {
+    return label;
+  }
+  if (maxChars <= 3) {
+    return label.slice(0, maxChars);
+  }
+  return `${label.slice(0, maxChars - 3)}...`;
+}
+
 export function renderSequence() {
   sequenceList.innerHTML = "";
   state.steps.forEach((step, index) => {
@@ -82,7 +96,7 @@ export function renderDiagram() {
   const participants = getParticipants();
   // Measure the scroll container, not the SVG itself, so the diagram fits without unnecessary scrolling.
   const baseWidth = (sequenceDiagram.clientWidth || 820) - 8;
-  const width = Math.max(baseWidth, participants.length * 150);
+  const width = Math.max(baseWidth, participants.length * 150) * 1.3;
   const topY = 40;
   const firstMsgY = 104;
   const msgGap = 56;
@@ -113,13 +127,14 @@ export function renderDiagram() {
 
   participants.forEach((name, i) => {
     const x = leftPad + actorGap * i;
+    const actorLabel = fitLabel(name, Math.max(120, actorGap - 18), 7.2);
     const actorText = createSvgElement("text", {
       x,
       y: 26,
       class: "seq-actor-text",
       "text-anchor": "middle"
     });
-    actorText.textContent = name;
+    actorText.textContent = actorLabel;
     sequenceSvg.appendChild(actorText);
     const textBox = safeBBox(actorText, {
       x: x - 60,
@@ -167,6 +182,8 @@ export function renderDiagram() {
 
     const x1 = leftPad + actorGap * fromIdx;
     const x2 = leftPad + actorGap * toIdx;
+    const labelMaxPx = Math.max(90, Math.abs(x2 - x1) - 26);
+    const fittedLabel = fitLabel(parsed.label, labelMaxPx, 6.2);
     const group = createSvgElement("g", {
       class: "seq-message",
       "data-index": index
@@ -220,13 +237,13 @@ export function renderDiagram() {
       class: "seq-message-text",
       "text-anchor": "middle"
     });
-    msgText.textContent = parsed.label;
+    msgText.textContent = fittedLabel;
 
     group.appendChild(msgText);
     const msgBox = safeBBox(msgText, {
-      x: midX - Math.max(36, parsed.label.length * 3.3),
+      x: midX - Math.max(36, fittedLabel.length * 3.3),
       y: y - 24,
-      width: Math.max(72, parsed.label.length * 6.6),
+      width: Math.max(72, fittedLabel.length * 6.6),
       height: 14
     });
     const msgBg = createSvgElement("rect", {

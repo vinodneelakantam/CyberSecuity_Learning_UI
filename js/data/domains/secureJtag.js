@@ -40,9 +40,9 @@ export const profile = {
       [
         "lcs = eFuse.readLifecycle()",
         "DAP.mode = LOCKED",
-      "Debug host (XDS110 probe) -> Device Management and Security Controller (DMSC) debug security handler: submitUnlockCert()",
+        "Policy.loadDebugMatrix(lcs)"
       ],
-      "The X.509 debug certificate carries the requested core scope, customer key reference, and session time-to-live policy.",
+      [
         "[EFUSE] lifecycle = HS-SE",
         "[DAP] lock state enabled",
         "[DBG] unauthorized debug blocked"

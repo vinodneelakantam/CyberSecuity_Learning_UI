@@ -777,6 +777,11 @@ input[type="search"]::placeholder {
   transition: opacity 220ms ease, transform 220ms ease, border-color 220ms ease, color 220ms ease;
   font-size: 0.84rem;
   font-family: "IBM Plex Mono", monospace;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .diagram-event strong {
@@ -821,7 +826,9 @@ input[type="search"]::placeholder {
 }
 
 .playback-layout.backend-mode .active-step-card {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-height: 45%;
+  overflow: auto;
 }
 
 .btn {
@@ -896,6 +903,8 @@ input[type="search"]::placeholder {
   border-radius: var(--radius-sm);
   padding: 0.85rem;
   background: var(--surface-2);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .step-kicker {
@@ -914,6 +923,17 @@ input[type="search"]::placeholder {
 
 .active-step-card > p {
   color: var(--ink-soft);
+  line-height: 1.5;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+#activeStepDeepDive {
+  line-height: 1.5;
+  text-align: justify;
+  text-justify: inter-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .active-step-card summary {
