@@ -24,7 +24,6 @@
         <a href="#flow">Internal Flow</a>
         <a href="#controls">Security Controls</a>
         <a href="#resilience">Failure & Recovery</a>
-        <a href="#learning">Learning Zone</a>
         <a href="#summary">Summary</a>
       </nav>
 
@@ -32,11 +31,11 @@
         <label>
           Security Topic
           <select id="domainSelect" aria-label="Security domain selection">
-            <option value="securityStorage" selected>SecurityStorage</option>
-            <option value="secureJtag">SecureJTAG</option>
-            <option value="secureDiagnostics">SecureDiagnostics</option>
             <option value="secureBoot">SecureBoot</option>
+            <option value="securityStorage" selected>SecurityStorage</option>
+            <option value="secureDiagnostics">SecureDiagnostics</option>
             <option value="secureLogging">SecureLogging</option>
+            <option value="secureJtag">SecureJTAG</option>
           </select>
         </label>
 
@@ -71,7 +70,7 @@
             id="conceptSearch"
             type="search"
             list="conceptOptions"
-            placeholder="Pick a step or glossary term..."
+            placeholder="Pick a step..."
             aria-label="Search concept"
           />
           <datalist id="conceptOptions"></datalist>
@@ -122,9 +121,6 @@
             <span id="archLink5">Atomic Commit / Anti-Rollback / Recovery</span>
           </div>
         </div>
-
-        <h3>Lifecycle View</h3>
-        <div class="state-machine" id="lifecycleView" role="img" aria-label="Lifecycle state transitions for selected secure concept"></div>
 
         <div class="tabs" role="tablist" aria-label="Flow perspectives">
           <button class="tab active" role="tab" data-tab="all" aria-selected="true">Functional Flow</button>
@@ -191,25 +187,6 @@
 
         <h3>Behind The Scenes</h3>
         <p id="behindScenesText"></p>
-      </section>
-
-      <section id="learning" class="panel reveal">
-        <h2>Learning Zone</h2>
-        <div class="grid-2">
-          <article class="card">
-            <h3>Why It Matters in ADAS</h3>
-            <ul id="whyItMattersList"></ul>
-          </article>
-          <article class="card">
-            <h3>Glossary</h3>
-            <div id="glossary" class="glossary"></div>
-          </article>
-        </div>
-
-        <h3>Knowledge Check</h3>
-        <div id="quizContainer" class="quiz-wrap"></div>
-        <button id="gradeQuizBtn" class="btn btn-primary" type="button">Grade Quiz</button>
-        <p id="quizResult" class="quiz-result"></p>
       </section>
 
       <section id="summary" class="panel reveal">

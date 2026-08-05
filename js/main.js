@@ -23,7 +23,7 @@ import {
   setTab,
   applyViewMode
 } from "./render/flowView.js";
-import { renderGlossary, renderQuiz, gradeQuiz, populateConceptOptions, jumpToConcept } from "./render/glossaryQuiz.js";
+import { populateConceptOptions, jumpToConcept } from "./render/glossaryQuiz.js";
 
 function applySelections() {
   const domain = domainProfiles[state.activeDomainKey];
@@ -64,7 +64,6 @@ document.getElementById("conceptSearch").addEventListener("keydown", (e) => {
     document.getElementById("searchButton").click();
   }
 });
-document.getElementById("gradeQuizBtn").addEventListener("click", gradeQuiz);
 
 domainSelect.addEventListener("change", (e) => {
   state.activeDomainKey = e.target.value;
@@ -90,7 +89,5 @@ window.addEventListener("resize", () => {
   renderStep();
 });
 
-renderGlossary();
-renderQuiz();
 applyViewMode("visual");
 applySelections();

@@ -4,28 +4,28 @@ export const profile = {
   title: "SecureLogging Internal Explorer",
   flowTitle: "SecureLogging Ingestion, Integrity, and Retention Flow",
   context:
-    "SecureLogging creates a tamper-evident, privacy-controlled event trail: AUTOSAR DEM events are HMAC-SHA256 hash-chained by SA2UL and committed to an eMMC secure partition with an RPMB-backed commit index for cybersecurity and safety investigations.",
+    "SecureLogging creates a tamper-evident, privacy-controlled event trail: Automotive Open System Architecture Diagnostic Event Manager events are hash-chained with Secure Hash Algorithm 256-bit message authentication codes by the Texas Instruments Security Accelerator and committed to an embedded MultiMediaCard secure partition with a Replay Protected Memory Block-backed commit index for cybersecurity and safety investigations.",
   participants: [
-    "AUTOSAR Event Sources (DEM)",
+    "Automotive Open System Architecture event sources (Diagnostic Event Manager)",
     "Log Ingestion Gateway",
     "Secure Log Manager",
-    "SA2UL HMAC Chain Engine",
-    "eMMC Secure Partition / RPMB",
-    "Offboard Reader (DoIP/OTA)"
+    "Texas Instruments Security Accelerator hash-chain engine",
+    "embedded MultiMediaCard secure partition / Replay Protected Memory Block",
+    "Offboard reader (Diagnostics over Internet Protocol / over-the-air)"
   ],
   architecture: {
     nodes: [
-      "AUTOSAR Event Sources (SWC / DEM DTC Events)",
+      "Automotive Open System Architecture event sources (software component / Diagnostic Event Manager diagnostic trouble code events)",
       "Log Ingestion Gateway",
-      "Secure Log Manager (R5F)",
-      "SA2UL HMAC-SHA256 Chain Engine",
-      "eMMC Secure Partition / RPMB + Offboard Reader"
+      "Secure Log Manager (Arm Cortex-R5F)",
+      "Texas Instruments Security Accelerator hash-chain engine",
+      "embedded MultiMediaCard secure partition / Replay Protected Memory Block + offboard reader"
     ],
     links: [
-      "DEM-sourced authenticated event ingress",
+      "Diagnostic Event Manager-sourced authenticated event ingress",
       "Schema/policy/privacy classification",
       "Field redaction and tokenization",
-      "HMAC-SHA256 hash-chain linking (tamper evidence)",
+      "Secure Hash Algorithm 256-bit message authentication code hash-chain linking (tamper evidence)",
       "Atomic commit + rotation + signed offboard read-out"
     ]
   },
@@ -33,10 +33,10 @@ export const profile = {
     mkStep(
       1,
       "Event Ingestion",
-      "AUTOSAR SWC/DEM raises a security or safety event.",
-      "AUTOSAR Event Sources (DEM) -> Log Ingestion Gateway: ingestEvent()",
+      "Automotive Open System Architecture software component or Diagnostic Event Manager raises a security or safety event.",
+      "Automotive Open System Architecture event sources (Diagnostic Event Manager) -> Log Ingestion Gateway: ingestEvent()",
       ["all", "functional"],
-      "Ingress captures source identity, DTC/severity, timestamp, and event class from the AUTOSAR Diagnostic Event Manager.",
+      "Ingress captures source identity, diagnostic trouble code severity, timestamp, and event class from the Automotive Open System Architecture Diagnostic Event Manager.",
       [
         "evt = Ingest.receive()",
         "Source.verify(evt)",
@@ -70,7 +70,7 @@ export const profile = {
       3,
       "Sensitive Field Redaction",
       "Sensitive values are redacted or tokenized.",
-      "Secure Log Manager -> SA2UL HMAC Chain Engine: redactAndTokenize()",
+      "Secure Log Manager -> Texas Instruments Security Accelerator hash-chain engine: redactAndTokenize()",
       ["all", "security"],
       "Field-level masking prevents disclosure while preserving forensic utility.",
       [
@@ -88,9 +88,9 @@ export const profile = {
       4,
       "Integrity Linking",
       "Record is HMAC-tagged and linked into a hash chain.",
-      "SA2UL HMAC Chain Engine -> Secure Log Manager: protectRecord()",
+      "Texas Instruments Security Accelerator hash-chain engine -> Secure Log Manager: protectRecord()",
       ["all", "security"],
-      "SA2UL computes an HMAC-SHA256 over the record plus the previous record's tag, creating tamper-evident continuity across the log stream.",
+      "The security accelerator computes a Secure Hash Algorithm 256-bit message authentication code over the record plus the previous record's tag, creating tamper-evident continuity across the log stream.",
       [
         "tag = SA2UL.hmacSha256(evt || prevTag)",
         "record = Pack(evt, tag)",
@@ -106,9 +106,9 @@ export const profile = {
       5,
       "Durable Commit",
       "Protected record is atomically committed to the secure store.",
-      "Secure Log Manager -> eMMC Secure Partition / RPMB: commitLogRecord()",
+      "Secure Log Manager -> embedded MultiMediaCard secure partition / Replay Protected Memory Block: commitLogRecord()",
       ["all", "functional"],
-      "Write markers and an RPMB-backed commit index prevent partial corruption on power loss.",
+      "Write markers and a Replay Protected Memory Block-backed commit index prevent partial corruption on power loss.",
       [
         "RPMB.markPending()",
         "Store.append(record)",
@@ -124,7 +124,7 @@ export const profile = {
       6,
       "Retention Rotation",
       "Retention scheduler rotates segments and archives summaries.",
-      "Secure Log Manager -> eMMC Secure Partition / RPMB: rotateSegments()",
+      "Secure Log Manager -> embedded MultiMediaCard secure partition / Replay Protected Memory Block: rotateSegments()",
       ["all", "functional"],
       "Rotation keeps bounded storage while preserving a signed continuity proof for the archived segment.",
       [
@@ -142,7 +142,7 @@ export const profile = {
       7,
       "Secure Retrieval",
       "Authorized retrieval requests are filtered by role and scope.",
-      "Offboard Reader (DoIP/OTA) -> Log Ingestion Gateway: requestSecureLogRead()",
+      "Offboard reader (Diagnostics over Internet Protocol / over-the-air) -> Log Ingestion Gateway: requestSecureLogRead()",
       ["all", "security"],
       "Responses include a signed integrity proof and redaction profile metadata for the offboard reader.",
       [
@@ -151,7 +151,7 @@ export const profile = {
         "Response.sign()"
       ],
       [
-        "[AUTH] retrieval request authorized",
+      "Texas Instruments Security Accelerator hash-chain engine -> Secure Log Manager: triggerTamperAlarm()",
         "[FILTER] scope applied",
         "[RESP] signed response produced"
       ]
@@ -179,25 +179,25 @@ export const profile = {
 
 export const narrative = {
   overviewIntro:
-    "SecureLogging captures AUTOSAR DEM security and safety events into a tamper-evident audit trail on TDA4VM. Each record is hash-chained with SA2UL HMAC-SHA256 and committed to an RPMB-backed secure partition, so any retroactive edit or deletion is cryptographically detectable.",
+    "SecureLogging captures Automotive Open System Architecture Diagnostic Event Manager security and safety events into a tamper-evident audit trail on Texas Instruments TDA4VM. Each record is hash-chained with Secure Hash Algorithm 256-bit message authentication codes and committed to a Replay Protected Memory Block-backed secure partition, so any retroactive edit or deletion is cryptographically detectable.",
   chips: [
-    "AUTOSAR DEM event sourcing",
-    "HMAC hash-chained log integrity",
-    "RPMB-backed commit index",
+    "Automotive Open System Architecture Diagnostic Event Manager event sourcing",
+    "Message authentication code hash-chained log integrity",
+    "Replay Protected Memory Block-backed commit index",
     "Authenticated offboard retrieval"
   ],
   contextCards: [
     {
       title: "Event Sourcing",
-      body: "AUTOSAR DEM and other security-relevant sources emit events that the Log Ingestion Gateway normalizes and timestamps before secure commit."
+      body: "Automotive Open System Architecture Diagnostic Event Manager and other security-relevant sources emit events that the Log Ingestion Gateway normalizes and timestamps before secure commit."
     },
     {
       title: "Integrity Chaining",
-      body: "The Secure Log Manager computes an HMAC-SHA256 chain over each new record using SA2UL, linking it to the previous record's hash for tamper evidence."
+      body: "The Secure Log Manager computes a Secure Hash Algorithm 256-bit message authentication code chain over each new record using the security accelerator, linking it to the previous record's hash for tamper evidence."
     },
     {
       title: "Retrieval and Retention",
-      body: "Committed logs are readable only through authenticated offboard channels (DoIP/OTA), with retention policy enforced against the RPMB-backed commit index."
+      body: "Committed logs are readable only through authenticated offboard channels (Diagnostics over Internet Protocol or over-the-air), with retention policy enforced against the Replay Protected Memory Block-backed commit index."
     }
   ],
   controlCards: [
@@ -259,7 +259,7 @@ export const narrative = {
     }
   ],
   behindScenes:
-    "Internal operations include AUTOSAR DEM event normalization, SA2UL HMAC-SHA256 chain computation, RPMB commit-index updates, secure partition rotation policy enforcement, and authenticated DoIP/OTA retrieval handling.",
+    "Internal operations include Automotive Open System Architecture Diagnostic Event Manager event normalization, Texas Instruments Security Accelerator HMAC-SHA256 chain computation, Replay Protected Memory Block commit-index updates, secure partition rotation policy enforcement, and authenticated Diagnostics over Internet Protocol or Over-the-Air retrieval handling.",
   whyItMatters: [
     "Provides tamper-evident evidence for post-incident and compliance review.",
     "Detects retroactive log tampering that would otherwise hide an attack.",

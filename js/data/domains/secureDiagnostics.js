@@ -4,29 +4,29 @@ export const profile = {
   title: "SecureDiagnostics Internal Explorer",
   flowTitle: "SecureDiagnostics Session, Auth, and Service Control",
   context:
-    "SecureDiagnostics follows ISO 14229 UDS Security Access (service 0x27) seed/key exchange backed by the SA2UL crypto accelerator, gated by AUTOSAR DEM vehicle-state and anti-brute-force delay timers.",
+    "SecureDiagnostics follows International Organization for Standardization 14229 Unified Diagnostic Services Security Access service 0x27 seed/key exchange backed by the Texas Instruments Security Accelerator crypto block, gated by Automotive Open System Architecture Diagnostic Event Manager vehicle-state and anti-brute-force delay timers.",
   participants: [
-    "Diag Tester (DoIP/UDS)",
-    "UDS Session Manager",
+    "Diagnostic tester (Diagnostics over Internet Protocol / Unified Diagnostic Services)",
+    "Unified Diagnostic Services session manager",
     "Security Access Handler (0x27)",
-    "SA2UL Crypto Accelerator",
-    "Vehicle State / DEM",
+    "Texas Instruments Security Accelerator crypto block",
+    "Vehicle state / Diagnostic Event Manager",
     "Diag Audit Trail"
   ],
   architecture: {
     nodes: [
-      "Diagnostic Tester (DoIP/UDS Client)",
-      "UDS Session Manager (0x10)",
-      "Security Access Handler (0x27 Seed/Key)",
-      "SA2UL Crypto Accelerator",
-      "Vehicle State Engine + AUTOSAR DEM"
+      "Diagnostic tester (Diagnostics over Internet Protocol / Unified Diagnostic Services client)",
+      "Unified Diagnostic Services session manager (0x10)",
+      "Security Access Handler (0x27 seed/key)",
+      "Texas Instruments Security Accelerator crypto block",
+      "Vehicle state engine + Automotive Open System Architecture Diagnostic Event Manager"
     ],
     links: [
       "Session transition governance (default to extended/programming)",
-      "ISO 14229 Security Access seed/key exchange",
+      "International Organization for Standardization 14229 Security Access seed/key exchange",
       "Attempt counter + delay timer anti-brute-force",
       "Service ACL gated by vehicle state (speed = 0, gear = P)",
-      "DEM DTC logging + signed audit trail"
+      "Diagnostic Event Manager diagnostic trouble code logging + signed audit trail"
     ]
   },
   steps: [
@@ -34,9 +34,9 @@ export const profile = {
       1,
       "Session Request",
       "Tester requests a secure diagnostic session transition.",
-      "Diag Tester (DoIP/UDS) -> UDS Session Manager: diagnosticSessionControl(0x10)",
+      "Diagnostic tester (Diagnostics over Internet Protocol / Unified Diagnostic Services) -> Unified Diagnostic Services session manager: diagnosticSessionControl(0x10)",
       ["all", "functional"],
-      "Session manager admits only approved session types (extended/programming) for security-critical routines.",
+      "The session manager admits only approved session types (extended or programming) for security-critical routines.",
       [
         "uds.sessionControl(0x10, req)",
         "SessionType.validate(req)",
@@ -51,10 +51,10 @@ export const profile = {
     mkStep(
       2,
       "Security Access Seed Request",
-      "Tester requests a seed via UDS service 0x27.",
-      "UDS Session Manager -> SA2UL Crypto Accelerator: requestSeed(0x27, subfunc=01)",
+      "Tester requests a seed via Unified Diagnostic Services service 0x27.",
+      "Unified Diagnostic Services session manager -> Texas Instruments Security Accelerator crypto block: requestSeed(0x27, subfunc=01)",
       ["all", "security"],
-      "SA2UL's TRNG generates the seed; the ECU arms the attempt counter and ISO 14229 delay timer before returning it.",
+      "The security accelerator's true random number generator generates the seed; the electronic control unit arms the attempt counter and International Organization for Standardization 14229 delay timer before returning it.",
       [
         "seed = SA2UL.trng()",
         "AttemptCounter.arm()",
@@ -70,9 +70,9 @@ export const profile = {
       3,
       "Key Response Verify",
       "Security Access Handler verifies the tester's computed key.",
-      "Security Access Handler (0x27) -> SA2UL Crypto Accelerator: verifyKey(subfunc=02)",
+      "Security Access Handler (0x27) -> Texas Instruments Security Accelerator crypto block: verifyKey(subfunc=02)",
       ["all", "security"],
-      "SA2UL validates the key computed via the OEM AES-CMAC algorithm against the shared secret; failures increment the attempt counter and can trigger the ISO 14229 exponential delay timer.",
+      "The security accelerator validates the key computed via the original equipment manufacturer Advanced Encryption Standard Cipher-based Message Authentication Code algorithm against the shared secret; failures increment the attempt counter and can trigger the International Organization for Standardization 14229 exponential delay timer.",
       [
         "keyOk = SA2UL.aesCmacVerify(seed, key, sharedSecret)",
         "if !keyOk: AttemptCounter.increment(); Delay.enforce()",
@@ -88,7 +88,7 @@ export const profile = {
       4,
       "Service Authorization",
       "Requested UDS DID/routine is authorized against policy.",
-      "Security Access Handler (0x27) -> Vehicle State / DEM: authorizeService()",
+      "Security Access Handler (0x27) -> Vehicle state / Diagnostic Event Manager: authorizeService()",
       ["all", "security"],
       "Authorization combines the granted security level, vehicle state (speed = 0, gear = P), and operation risk gates.",
       [
@@ -106,9 +106,9 @@ export const profile = {
       5,
       "Payload Guarding",
       "Payload shape, length, and parameter bounds are validated.",
-      "UDS Session Manager -> Security Access Handler (0x27): validateDiagPayload()",
+      "Unified Diagnostic Services session manager -> Security Access Handler (0x27): validateDiagPayload()",
       ["all", "functional"],
-      "Rejects malformed RoutineControl/WriteDataByIdentifier parameters, unsupported DIDs, and unsafe command ranges.",
+      "Rejects malformed RoutineControl or WriteDataByIdentifier parameters, unsupported data identifiers, and unsafe command ranges.",
       [
         "Schema.validate(payload)",
         "Length.check(payload)",
@@ -124,9 +124,9 @@ export const profile = {
       6,
       "Protected Routine Execution",
       "Authorized routine executes with watchdog and timeout controls.",
-      "Security Access Handler (0x27) -> Vehicle State / DEM: executeProtectedRoutine()",
+      "Security Access Handler (0x27) -> Vehicle state / Diagnostic Event Manager: executeProtectedRoutine()",
       ["all", "functional"],
-      "Execution is bounded to avoid unsafe persistent states; the AUTOSAR DEM is notified of the outcome for event/DTC tracking.",
+      "Execution is bounded to avoid unsafe persistent states; the Automotive Open System Architecture Diagnostic Event Manager is notified of the outcome for event and diagnostic trouble code tracking.",
       [
         "Watchdog.arm()",
         "Routine.execute(id)",
@@ -142,9 +142,9 @@ export const profile = {
       7,
       "Response Redaction",
       "Response fields are filtered by security level and policy.",
-      "Security Access Handler (0x27) -> UDS Session Manager: redactAndRespond()",
+      "Security Access Handler (0x27) -> Unified Diagnostic Services session manager: redactAndRespond()",
       ["all", "security"],
-      "Sensitive DIDs are masked to prevent over-disclosure through diagnostics before the UDS positive response.",
+      "Sensitive data identifiers are masked to prevent over-disclosure through diagnostics before the positive response.",
       [
         "Response.maskSensitive()",
         "Policy.redactByRole()",
@@ -160,9 +160,9 @@ export const profile = {
       8,
       "Audit Commit",
       "Session actions are signed and persisted in the diag audit trail.",
-      "Security Access Handler (0x27) -> Diag Audit Trail: appendSessionAudit()",
+      "Security Access Handler (0x27) -> Diagnostic audit trail: appendSessionAudit()",
       ["all", "error"],
-      "Audit entries preserve requester, service, result, and anomaly markers; repeated key failures raise a DEM DTC and extend the ISO 14229 lockout delay.",
+      "Audit entries preserve requester, service, result, and anomaly markers; repeated key failures raise a Diagnostic Event Manager diagnostic trouble code and extend the International Organization for Standardization 14229 lockout delay.",
       [
         "audit = Audit.buildEntry()",
         "tag = SA2UL.sha256Mac(audit)",
@@ -179,21 +179,21 @@ export const profile = {
 
 export const narrative = {
   overviewIntro:
-    "SecureDiagnostics governs authenticated access to UDS/DoIP diagnostic services on the TDA4VM domain controller. It enforces ISO 14229 Security Access (service 0x27) with AES-CMAC seed/key exchange, attempt-limited brute-force defenses, and AUTOSAR DEM vehicle-state gating before any protected diagnostic routine executes.",
+    "SecureDiagnostics governs authenticated access to Unified Diagnostic Services and Diagnostics over Internet Protocol diagnostic services on the Texas Instruments TDA4VM domain controller. It enforces International Organization for Standardization 14229 Security Access service 0x27 with Advanced Encryption Standard Cipher-based Message Authentication Code seed/key exchange, attempt-limited brute-force defenses, and Automotive Open System Architecture Diagnostic Event Manager vehicle-state gating before any protected diagnostic routine executes.",
   chips: [
-    "UDS 0x27 seed/key security access",
-    "AES-CMAC challenge validation",
+    "Unified Diagnostic Services 0x27 seed/key security access",
+    "Advanced Encryption Standard Cipher-based Message Authentication Code challenge validation",
     "Attempt-counter brute-force defense",
     "Vehicle-state gated diagnostics"
   ],
   contextCards: [
     {
       title: "Tester Entry Point",
-      body: "A DoIP/UDS tester (workshop tool or backend) opens a diagnostic session and requests Security Access before any write, routine, or protected read is permitted."
+      body: "A Diagnostics over Internet Protocol and Unified Diagnostic Services tester, such as a workshop tool or backend, opens a diagnostic session and requests Security Access before any write, routine, or protected read is permitted."
     },
     {
       title: "Runtime Enforcement",
-      body: "The Security Access Handler validates seed/key exchange and consults AUTOSAR DEM vehicle-state before allowing operations that could affect safety-relevant behavior."
+      body: "The Security Access Handler validates the seed/key exchange and consults the Automotive Open System Architecture Diagnostic Event Manager vehicle state before allowing operations that could affect safety-relevant behavior."
     },
     {
       title: "Audit and Escalation",
@@ -203,7 +203,7 @@ export const narrative = {
   controlCards: [
     {
       title: "Seed/Key Authentication",
-      body: "SA2UL computes an AES-CMAC response over the issued seed; only a correctly keyed tester can produce a matching key value."
+      body: "The security accelerator computes an Advanced Encryption Standard Cipher-based Message Authentication Code response over the issued seed; only a correctly keyed tester can produce a matching key value."
     },
     {
       title: "Brute-Force Defense",
@@ -211,7 +211,7 @@ export const narrative = {
     },
     {
       title: "Vehicle-State Gating",
-      body: "AUTOSAR DEM state (e.g. vehicle speed, ignition state) is checked before permitting diagnostics that could be unsafe while driving."
+      body: "Automotive Open System Architecture Diagnostic Event Manager state, such as vehicle speed and ignition state, is checked before permitting diagnostics that could be unsafe while driving."
     },
     {
       title: "Audit Trail Integrity",
@@ -259,7 +259,7 @@ export const narrative = {
     }
   ],
   behindScenes:
-    "Internal operations include UDS session management, SA2UL AES-CMAC computation, attempt-counter and delay-timer bookkeeping, AUTOSAR DEM state queries, and diagnostic audit trail commits coordinated across the Classic and Adaptive partitions.",
+    "Internal operations include Unified Diagnostic Services session management, Texas Instruments Security Accelerator AES-CMAC computation, attempt-counter and delay-timer bookkeeping, Automotive Open System Architecture Diagnostic Event Manager state queries, and diagnostic audit trail commits coordinated across the Classic and Adaptive partitions.",
   whyItMatters: [
     "Prevents unauthorized reflashing or actuator control through diagnostic interfaces.",
     "Keeps safety-relevant diagnostics gated by real vehicle state.",
@@ -272,5 +272,5 @@ export const narrative = {
     "Audit logging of every attempt supports traceability and compliance."
   ],
   summaryAssumptions:
-    "Reference assumptions used in this simulator: UDS Security Access level 0x27/0x28 with AES-CMAC seed/key exchange, exponential delay timer starting at 10 seconds after 3 failed attempts, DEM-gated routines mapped to UDS DTC ranges reserved for diagnostic security events, and session timeout of 5 seconds S3 per ISO 14229 defaults."
+    "Reference assumptions used in this simulator: Unified Diagnostic Services Security Access level 0x27/0x28 with Advanced Encryption Standard Cipher-based Message Authentication Code seed/key exchange, exponential delay timer starting at 10 seconds after 3 failed attempts, Diagnostic Event Manager-gated routines mapped to diagnostic trouble code ranges reserved for diagnostic security events, and session timeout of 5 seconds S3 per International Organization for Standardization 14229 defaults."
 };
