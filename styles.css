@@ -579,7 +579,7 @@ input[type="search"]::placeholder {
 
 .playback-layout {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1.3fr) minmax(280px, 0.95fr);
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1.85fr) minmax(220px, 0.62fr);
   grid-template-areas: "sequence diagram log";
   gap: 0.95rem;
   height: clamp(560px, 66vh, 760px);
