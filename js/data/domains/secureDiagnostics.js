@@ -160,7 +160,7 @@ export const profile = {
       8,
       "Audit Commit",
       "Session actions are signed and persisted in the diag audit trail.",
-      "Security Access Handler (0x27) -> Diagnostic audit trail: appendSessionAudit()",
+      "Security Access Handler (0x27) -> Diag Audit Trail: appendSessionAudit()",
       ["all", "error"],
       "Audit entries preserve requester, service, result, and anomaly markers; repeated key failures raise a Diagnostic Event Manager diagnostic trouble code and extend the International Organization for Standardization 14229 lockout delay.",
       [

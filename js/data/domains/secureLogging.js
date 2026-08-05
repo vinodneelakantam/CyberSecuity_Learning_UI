@@ -151,16 +151,16 @@ export const profile = {
         "Response.sign()"
       ],
       [
-      "Texas Instruments Security Accelerator (SA2UL) hash-chain engine -> Secure Log Manager: triggerTamperAlarm()",
+        "[AUTH] retrieval request authorized",
         "[FILTER] scope applied",
-      "A hash-chain verification failure raises an alert, preserves evidence, and can elevate security posture via a Diagnostic Event Manager (DEM) diagnostic trouble code (DTC).",
+        "[RESP] signed response produced"
       ]
     ),
     mkStep(
       8,
       "Tamper Alarm",
       "Chain mismatch triggers evidence snapshot and alert response.",
-      "SA2UL HMAC Chain Engine -> Secure Log Manager: triggerTamperAlarm()",
+      "Texas Instruments Security Accelerator (SA2UL) hash-chain engine -> Secure Log Manager: triggerTamperAlarm()",
       ["all", "error", "security"],
       "A hash-chain verification failure raises an alert, preserves evidence, and can elevate security posture via a DEM DTC.",
       [

@@ -51,7 +51,7 @@ export const profile = {
       2,
       "SYSFW/TIFS Load",
       "R5 Secondary Program Loader (R5 SPL) loads and authenticates the System Firmware / Texas Instruments System Firmware image.",
-      "R5 Secondary Program Loader (R5 SPL) (X.509 Auth) -> System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC): loadAndVerifyTIFS()",
+      "R5 Secondary Program Loader (R5 SPL) (X.509 Auth) -> System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (DMSC): loadAndVerifyTIFS()",
       ["all", "functional"],
       "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS), bundled with board configuration data, is verified and becomes the resident power management, resource management, and security service running on the Device Management and Security Controller (DMSC) for the remainder of the boot.",
       [
@@ -87,7 +87,7 @@ export const profile = {
       4,
       "Anti-Rollback Check",
       "Version counters reject signed but stale images.",
-      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC) -> R5 Secondary Program Loader (R5 SPL) (X.509 Auth): verifyVersionFreshness()",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (DMSC) -> R5 Secondary Program Loader (R5 SPL) (X.509 Auth): verifyVersionFreshness()",
       ["all", "security"],
       "Each stage's version is checked against the Replay Protected Memory Block (RPMB) and eFuse monotonic counter before execution, enforcing forward-only trust progression.",
       [
@@ -141,7 +141,7 @@ export const profile = {
       7,
       "Fail-Secure Handler",
       "Any trust violation enters a controlled fail-secure path.",
-      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (Device Management and Security Controller / DMSC) -> U-Boot BL33 / Linux: triggerFailSecure()",
+      "System Firmware / Texas Instruments System Firmware (SYSFW / TIFS) (DMSC) -> U-Boot BL33 / Linux: triggerFailSecure()",
       ["all", "error"],
       "A signature, hash, or version mismatch anywhere in the chain halts the boot, captures diagnostics, and blocks sensitive services.",
       [

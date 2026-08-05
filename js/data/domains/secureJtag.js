@@ -52,7 +52,7 @@ export const profile = {
       2,
       "Unlock Certificate Submission",
       "Authorized workshop tool submits a signed debug unlock certificate.",
-      "Debug host (XDS110 probe) -> Device Management and Security Controller debug security handler: submitUnlockCert()",
+      "Debug Host (XDS110 Probe) -> Device Management and Security Controller (DMSC) debug security handler: submitUnlockCert()",
       ["all", "functional"],
       "The X.509 debug certificate carries the requested core scope, customer key reference, and session TTL policy.",
       [
@@ -160,7 +160,7 @@ export const profile = {
       8,
       "Audit Finalization",
       "Session closure evidence is committed to the secure audit log.",
-      "Device Management and Security Controller (DMSC) debug security handler -> secure audit log: persistSessionAudit()",
+      "Device Management and Security Controller (DMSC) debug security handler -> Secure Audit Log: persistSessionAudit()",
       ["all", "error"],
       "Final audit includes DIE ID, certificate serial, requester identity, scope, duration, and violation markers.",
       [
